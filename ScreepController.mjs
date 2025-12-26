@@ -37,11 +37,9 @@ export class ScreepController {
 
     // Update all creeps - remove dead ones and call actions for alive ones
     updateCreeps(winObjective) {
-        console.log(creepInfo);
         // Filter out dead creeps and keep alive ones
         this.creeps = this.creeps.filter(creepInfo => {
             const creep = getObjectById(creepInfo.id);
-            print(creep);
             
             // If creep has does not exist it's dead - remove it
             if (!creep || !creep.exists) {
