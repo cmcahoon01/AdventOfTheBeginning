@@ -7,6 +7,9 @@ import { createConstructionSite } from 'game';
 export const MINER_BODY = [WORK, WORK, WORK, WORK, CARRY, MOVE];
 export const MINER_COST = 500; // 100 + 100 + 100 + 100 + 50 + 50
 
+// Number of extensions each miner should create and fill
+export const EXTENSIONS_PER_MINER = 1;
+
 // Helper function to find sources sorted by position (top to bottom)
 function findSortedSources() {
     const sources = getObjectsByPrototype(Source);
@@ -230,10 +233,10 @@ export function act_miner(creepInfo, controller, winObjective) {
                 if (!creepInfo.memory.extensionsCreated) {
                     const extensionPositions = getExtensionPositions(creep, source);
                     
-                    // Create construction sites (limit to 5)
+                    // Create construction sites (limit to EXTENSIONS_PER_MINER)
                     let created = 0;
                     for (const pos of extensionPositions) {
-                        if (created >= 5) break;
+                        if (created >= EXTENSIONS_PER_MINER) break;
                         
                         const result = createConstructionSite(pos, StructureExtension);
                         if (result.object) {
@@ -262,14 +265,14 @@ export function act_miner(creepInfo, controller, winObjective) {
                         }
                     }
                 } else {
-                    // Check if we have 5 extensions nearby (construction is complete)
+                    // Check if all extensions nearby are built (construction is complete)
                     const allExtensions = getObjectsByPrototype(StructureExtension).filter(e => e.my);
                     const nearbyExtensions = allExtensions.filter(ext => {
                         const range = getRange(creep, ext);
                         return range <= 1;
                     });
                     
-                    if (nearbyExtensions.length >= 5) {
+                    if (nearbyExtensions.length >= EXTENSIONS_PER_MINER) {
                         // All extensions are built, move to stage 2
                         creepInfo.memory.stage = 2;
                         console.log(`Miner ${creepInfo.id} moving to stage 2 with ${nearbyExtensions.length} extensions`);
