@@ -4,8 +4,8 @@ import { Source, StructureSpawn, StructureExtension, ConstructionSite } from 'ga
 import { createConstructionSite } from 'game';
 
 // Body configuration for miner creeps
-export const MINER_BODY = [WORK, WORK, WORK, WORK, CARRY, MOVE];
-export const MINER_COST = 500; // 100 + 100 + 100 + 100 + 50 + 50
+export const MINER_BODY = [WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE];
+export const MINER_COST = 500; // 100 + 100 + 100 + 50 + 50 + 50 + 50
 
 // Number of extensions each miner should create and fill
 export const EXTENSIONS_PER_MINER = 1;
@@ -245,6 +245,7 @@ export function act_miner(creepInfo, controller, winObjective) {
                     }
                     
                     creepInfo.memory.extensionsCreated = true;
+                    console.log("created construction sites at" + extensionPositions);                
                 }
                 
                 // Find construction sites around the miner
@@ -276,6 +277,8 @@ export function act_miner(creepInfo, controller, winObjective) {
                         // All extensions are built, move to stage 2
                         creepInfo.memory.stage = 2;
                         console.log(`Miner ${creepInfo.id} moving to stage 2 with ${nearbyExtensions.length} extensions`);
+                    } else {
+                        console.log("extensions or sites not found");
                     }
                 }
             } else if (creepInfo.memory.stage === 2) {
