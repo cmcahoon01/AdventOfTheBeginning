@@ -41,8 +41,13 @@ export class ScreepController {
         this.creeps = this.creeps.filter(creepInfo => {
             const creep = getObjectById(creepInfo.id);
             
-            // If creep is dead/doesn't exist, remove from memory
-            if (!creep || creep.hits === 0) {
+            // If creep doesn't exist yet, it might still be spawning - keep it
+            if (!creep) {
+                return true;
+            }
+            
+            // If creep has 0 hits and is not spawning, it's dead - remove it
+            if (creep.hits === 0 && !creep.spawning) {
                 console.log(`Removing dead creep ${creepInfo.id}`);
                 return false;
             }
