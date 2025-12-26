@@ -6,6 +6,20 @@ import { Source, ConstructionSite, StructureSpawn, Creep } from 'game/prototypes
 export const HAULER_BODY = [WORK, CARRY, MOVE, MOVE];
 export const HAULER_COST = 250; // 100 + 50 + 50 + 50
 
+// Heuristic to identify miner creeps (miners have 4 WORK parts)
+const MINER_WORK_PARTS_THRESHOLD = 4;
+
+// Helper function to deliver resources to spawn
+function deliverToSpawn(creep) {
+    const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
+    if (spawn) {
+        const transferResult = creep.transfer(spawn, RESOURCE_ENERGY);
+        if (transferResult === ERR_NOT_IN_RANGE) {
+            creep.moveTo(spawn);
+        }
+    }
+}
+
 export function act_hauler(creepInfo) {
     const creep = getObjectById(creepInfo.id);
     if (!creep) {
@@ -56,7 +70,7 @@ export function act_hauler(creepInfo) {
             // Since we can't access the controller from here, we'll use a heuristic:
             // Miners have more WORK parts than haulers (4 vs 1)
             const workParts = c.body.filter(part => part.type === WORK).length;
-            return workParts >= 4 && c.id !== creep.id;
+            return workParts >= MINER_WORK_PARTS_THRESHOLD && c.id !== creep.id;
         });
 
         let target;
@@ -74,25 +88,11 @@ export function act_hauler(creepInfo) {
                 }
             } else {
                 // No construction sites, deliver to spawn instead
-                const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
-                if (spawn) {
-                    target = spawn;
-                    const transferResult = creep.transfer(target, RESOURCE_ENERGY);
-                    if (transferResult === ERR_NOT_IN_RANGE) {
-                        creep.moveTo(target);
-                    }
-                }
+                deliverToSpawn(creep);
             }
         } else {
             // No miners, deliver to spawn
-            const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
-            if (spawn) {
-                target = spawn;
-                const transferResult = creep.transfer(target, RESOURCE_ENERGY);
-                if (transferResult === ERR_NOT_IN_RANGE) {
-                    creep.moveTo(target);
-                }
-            }
+            deliverToSpawn(creep);
         }
     }
 }
