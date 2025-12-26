@@ -1,13 +1,10 @@
 import { getObjectById, getObjectsByPrototype } from 'game/utils';
 import { WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY } from 'game/constants';
-import { Source, ConstructionSite, StructureSpawn, Creep } from 'game/prototypes';
+import { Source, StructureSpawn } from 'game/prototypes';
 
 // Body configuration for hauler creeps
 export const HAULER_BODY = [WORK, CARRY, MOVE, MOVE];
 export const HAULER_COST = 250; // 100 + 50 + 50 + 50
-
-// Heuristic to identify miner creeps (miners have 4 WORK parts)
-const MINER_WORK_PARTS_THRESHOLD = 4;
 
 // Helper function to deliver resources to spawn
 function deliverToSpawn(creep) {
@@ -20,7 +17,7 @@ function deliverToSpawn(creep) {
     }
 }
 
-export function act_hauler(creepInfo) {
+export function act_hauler(creepInfo, controller, winObjective) {
     const creep = getObjectById(creepInfo.id);
     if (!creep) {
         return;
@@ -63,30 +60,18 @@ export function act_hauler(creepInfo) {
             return;
         }
 
-        // Check if there are any miner creeps
-        const allCreeps = getObjectsByPrototype(Creep).filter(c => c.my);
-        const hasMinerCreeps = allCreeps.some(c => {
-            // We need to check if any creep is a miner
-            // Since we can't access the controller from here, we'll use a heuristic:
-            // Miners have more WORK parts than haulers (4 vs 1)
-            const workParts = c.body.filter(part => part.type === WORK).length;
-            return workParts >= MINER_WORK_PARTS_THRESHOLD && c.id !== creep.id;
-        });
+        // Check if there are any miner creeps by accessing the controller
+        const hasMinerCreeps = controller.creeps.some(c => c.job === 'miner');
 
         if (hasMinerCreeps) {
-            // Deliver to construction site if miners exist
-            const constructionSites = getObjectsByPrototype(ConstructionSite).filter(site => site.my);
-            if (constructionSites.length > 0) {
-                const target = creep.findClosestByRange(constructionSites);
-                
-                if (target) {
-                    const buildResult = creep.build(target);
-                    if (buildResult === ERR_NOT_IN_RANGE) {
-                        creep.moveTo(target);
-                    }
+            // Deliver to the specific construction site (winObjective) if miners exist
+            if (winObjective) {
+                const buildResult = creep.build(winObjective);
+                if (buildResult === ERR_NOT_IN_RANGE) {
+                    creep.moveTo(winObjective);
                 }
             } else {
-                // No construction sites, deliver to spawn instead
+                // No construction site, deliver to spawn instead
                 deliverToSpawn(creep);
             }
         } else {

@@ -36,7 +36,7 @@ export class ScreepController {
     }
 
     // Update all creeps - remove dead ones and call actions for alive ones
-    updateCreeps() {
+    updateCreeps(winObjective) {
         // Filter out dead creeps and keep alive ones
         this.creeps = this.creeps.filter(creepInfo => {
             const creep = getObjectById(creepInfo.id);
@@ -52,7 +52,7 @@ export class ScreepController {
             if (!creep.spawning) {
                 const actionFn = this.jobActions[creepInfo.job];
                 if (actionFn) {
-                    actionFn(creepInfo);
+                    actionFn(creepInfo, this, winObjective);
                 }
             }
             

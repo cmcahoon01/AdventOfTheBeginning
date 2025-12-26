@@ -6,7 +6,7 @@ import { Creep } from 'game/prototypes';
 export const FIGHTER_BODY = [ATTACK, ATTACK, MOVE, MOVE];
 export const FIGHTER_COST = 260; // 80 + 80 + 50 + 50
 
-export function act_fighter(creepInfo) {
+export function act_fighter(creepInfo, controller, winObjective) {
     const creep = getObjectById(creepInfo.id);
     if (!creep) {
         return;
