@@ -12,10 +12,10 @@ export function loop() {
     console.log(spawn.spawning);
 
     if(!spawn.spawning) {
-        const newCreep = spawn.spawnCreep([WORK, CARRY, MOVE, MOVE]);
-        if (newCreep && newCreep.object) {
+        const result = spawn.spawnCreep([WORK, CARRY, MOVE, MOVE]);
+        if (result && result.object && !result.error) {
             // Add the newly spawned creep to the controller with a default job
-            screepController.addCreep(newCreep.object.id, 'miner');
+            screepController.addCreep(result.object.id, 'miner');
         }
     }
 
