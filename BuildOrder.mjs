@@ -99,10 +99,11 @@ export class BuildOrder {
                 // Add the creep to memory with its job
                 this.screepController.addCreep(creepId, this.pendingSpawnJob);
                 console.log(`Added spawning ${this.pendingSpawnJob} with id ${creepId} to memory`);
-                this.pendingSpawnJob = null;
             }
-        } else if (!spawn || !spawn.spawning) {
-            // Clear pending job if spawn is no longer spawning
+            // Clear pending job once we've checked and processed it
+            this.pendingSpawnJob = null;
+        } else if (this.pendingSpawnJob && (!spawn || !spawn.spawning)) {
+            // Clear pending job if spawn is no longer spawning but we still have a pending job
             this.pendingSpawnJob = null;
         }
     }
