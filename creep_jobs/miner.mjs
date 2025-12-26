@@ -1,5 +1,5 @@
 import { getObjectById, getObjectsByPrototype, getRange } from 'game/utils';
-import { WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT, RESOURCE_ENERGY } from 'game/constants';
+import { WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY } from 'game/constants';
 import { Source, StructureSpawn, StructureExtension, ConstructionSite } from 'game/prototypes';
 import { createConstructionSite } from 'game';
 
@@ -63,7 +63,6 @@ function assignSourceToMiner(minerIndex) {
 // Helper function to find the position directly adjacent to the source (not diagonal)
 // The source is in a wall, so we look for the one non-wall position directly adjacent
 function findMiningPosition(source) {
-    const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
     const teamSide = getTeamSide();
     
     // The mining position should be the one facing towards the center/spawn
@@ -230,8 +229,8 @@ export function act_miner(creepInfo, controller, winObjective) {
                 
                 // Create construction sites if not already done
                 if (!creepInfo.memory.extensionsCreated) {
-                    const source = getObjectById(creepInfo.memory.sourceId);
-                    const extensionPositions = getExtensionPositions(creep, source);
+                    const assignedSource = getObjectById(creepInfo.memory.sourceId);
+                    const extensionPositions = getExtensionPositions(creep, assignedSource);
                     
                     // Create construction sites (limit to 5)
                     let created = 0;
