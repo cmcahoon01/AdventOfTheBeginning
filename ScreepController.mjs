@@ -43,7 +43,7 @@ export class ScreepController {
             
             // If creep doesn't exist yet, it might still be spawning - keep it
             if (!creep) {
-                return true;
+                return false;
             }
             
             // If creep has 0 hits and is not spawning, it's dead - remove it
