@@ -1,35 +1,13 @@
 import { getObjectById } from 'game/utils';
+import { act_fighter } from './creep_jobs/fighter.mjs';
+import { act_hauler } from './creep_jobs/hauler.mjs';
+import { act_miner } from './creep_jobs/miner.mjs';
 
 // Class to store information about a creep
 class CreepInfo {
     constructor(id, job) {
         this.id = id;
         this.job = job;
-    }
-}
-
-// Placeholder action functions for each job
-function act_fighter(id) {
-    // TODO: Implement fighter logic
-    const creep = getObjectById(id);
-    if (creep) {
-        console.log(`Fighter ${id} acting`);
-    }
-}
-
-function act_hauler(id) {
-    // TODO: Implement hauler logic
-    const creep = getObjectById(id);
-    if (creep) {
-        console.log(`Hauler ${id} acting`);
-    }
-}
-
-function act_miner(id) {
-    // TODO: Implement miner logic
-    const creep = getObjectById(id);
-    if (creep) {
-        console.log(`Miner ${id} acting`);
     }
 }
 
@@ -63,15 +41,18 @@ export class ScreepController {
             const creep = getObjectById(creepInfo.id);
             
             // If creep is dead/doesn't exist, remove from memory
-            if (!creep) {
+            if (!creep || creep.hits == 0) {
                 console.log(`Removing dead creep ${creepInfo.id}`);
                 return false;
             }
             
             // Creep is alive, call its action function
-            const actionFn = this.jobActions[creepInfo.job];
-            if (actionFn) {
-                actionFn(creepInfo.id);
+            // Skip if creep is still spawning
+            if (!creep.spawning) {
+                const actionFn = this.jobActions[creepInfo.job];
+                if (actionFn) {
+                    actionFn(creepInfo.id);
+                }
             }
             
             return true;
