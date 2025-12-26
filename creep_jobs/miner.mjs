@@ -213,7 +213,6 @@ export function act_miner(creepInfo, controller, winObjective) {
     // State: Mining and working
     if (creepInfo.memory.state === 'mining') {
         const usedCapacity = creep.store[RESOURCE_ENERGY] || 0;
-        const totalCapacity = creep.store.getCapacity(RESOURCE_ENERGY);
         
         // Alternate between mining and using resources
         if (usedCapacity === 0) {
@@ -229,8 +228,7 @@ export function act_miner(creepInfo, controller, winObjective) {
                 
                 // Create construction sites if not already done
                 if (!creepInfo.memory.extensionsCreated) {
-                    const assignedSource = getObjectById(creepInfo.memory.sourceId);
-                    const extensionPositions = getExtensionPositions(creep, assignedSource);
+                    const extensionPositions = getExtensionPositions(creep, source);
                     
                     // Create construction sites (limit to 5)
                     let created = 0;
