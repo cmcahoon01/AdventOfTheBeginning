@@ -6,7 +6,7 @@ import { ScreepController } from './ScreepController.mjs';
 import { BuildOrder } from './BuildOrder.mjs';
 
 const spawn = getObjectsByPrototype(StructureSpawn).find(i => i.my);
-const constructionSite = getObjectsByPrototype(ConstructionSite).find(i => i.my);
+const winObjective = getObjectsByPrototype(ConstructionSite).find(i => i.my);
 const screepController = new ScreepController();
 const buildOrder = new BuildOrder(screepController);
 
@@ -15,5 +15,5 @@ export function loop() {
     buildOrder.trySpawnNextCreep();
 
     // Use the controller to update all creeps
-    screepController.updateCreeps();
+    screepController.updateCreeps(winObjective);
 }
