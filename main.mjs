@@ -11,6 +11,9 @@ const screepController = new ScreepController();
 const buildOrder = new BuildOrder(screepController);
 
 export function loop() {
+    // Check if there's a spawning creep that needs to be added to memory
+    buildOrder.checkAndAddSpawningCreep();
+
     // Try to spawn the next creep in the build order
     buildOrder.trySpawnNextCreep();
 
