@@ -107,7 +107,7 @@ export class BuildOrder {
         const result = spawn.spawnCreep(nextCreep.body);
         if (result && result.object && !result.error) {
             // Add the newly spawned creep to the controller
-            this.screepController.addCreep(result.object.id, nextCreep.job);
+            this.screepController.addCreep(spawn.spawning.creep.id, nextCreep.job);
             console.log(`Spawned ${nextCreep.job} (cost: ${nextCreep.cost}, available energy: ${totalEnergy})`);
             return true;
         }
