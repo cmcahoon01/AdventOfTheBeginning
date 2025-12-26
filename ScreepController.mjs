@@ -47,7 +47,7 @@ export class ScreepController {
             }
             
             // If creep has 0 hits and is not spawning, it's dead - remove it
-            if (!creep.exists && !creep.spawning) {
+            if (!creep.exists) {
                 console.log(`Removing dead creep ${creepInfo.id}`);
                 return false;
             }
