@@ -91,6 +91,11 @@ export class BuildOrder {
         // If spawn is spawning a creep and we have a pending job
         if (spawn && spawn.spawning && this.pendingSpawnJob) {
             const creepId = spawn.spawning.creep.id;
+
+            if (creepId === undefined){
+                console.log("spawning creep undefined");
+                return;
+            }
             
             // Check if this creep is already in our controller
             const alreadyAdded = this.screepController.creeps.some(c => c.id === creepId);
