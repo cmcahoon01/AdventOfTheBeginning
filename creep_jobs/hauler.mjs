@@ -73,12 +73,11 @@ export function act_hauler(creepInfo) {
             return workParts >= MINER_WORK_PARTS_THRESHOLD && c.id !== creep.id;
         });
 
-        let target;
         if (hasMinerCreeps) {
             // Deliver to construction site if miners exist
             const constructionSites = getObjectsByPrototype(ConstructionSite).filter(site => site.my);
             if (constructionSites.length > 0) {
-                target = creep.findClosestByRange(constructionSites);
+                const target = creep.findClosestByRange(constructionSites);
                 
                 if (target) {
                     const buildResult = creep.build(target);
