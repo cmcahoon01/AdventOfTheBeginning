@@ -3,8 +3,8 @@ import { ATTACK, MOVE, ERR_NOT_IN_RANGE } from 'game/constants';
 import { Creep } from 'game/prototypes';
 
 // Body configuration for fighter creeps
-export const FIGHTER_BODY = [ATTACK, ATTACK, MOVE, MOVE];
-export const FIGHTER_COST = 260; // 80 + 80 + 50 + 50
+export const FIGHTER_BODY = [MOVE, MOVE, ATTACK, ATTACK];
+export const FIGHTER_COST = 260; // 50 + 50 + 80 + 80
 
 export function act_fighter(creepInfo, controller, winObjective) {
     const creep = getObjectById(creepInfo.id);
