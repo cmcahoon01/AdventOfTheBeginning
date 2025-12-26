@@ -1,5 +1,5 @@
 import { getObjectsByPrototype } from 'game/utils';
-import { StructureSpawn, StructureContainer } from 'game/prototypes';
+import { StructureSpawn, StructureExtension } from 'game/prototypes';
 import { RESOURCE_ENERGY } from 'game/constants';
 import { FIGHTER_BODY, FIGHTER_COST } from './creep_jobs/fighter.mjs';
 import { HAULER_BODY, HAULER_COST } from './creep_jobs/hauler.mjs';
