@@ -7,8 +7,6 @@ const spawn = getObjectsByPrototype(StructureSpawn).find(i => i.my);
 const constructionSite = getObjectsByPrototype(ConstructionSite).find(i => i.my);
 
 export function loop() {
-    console.log(spawn.spawning);
-
     if(!spawn.spawning) {
         spawn.spawnCreep([WORK, CARRY, MOVE, MOVE]);
     }
