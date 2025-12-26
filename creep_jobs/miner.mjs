@@ -1,5 +1,5 @@
-import { getObjectById, getObjectsByPrototype, getRange } from 'game/utils';
-import { WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY } from 'game/constants';
+import { getObjectById, getObjectsByPrototype, getRange, getTerrainAt } from 'game/utils';
+import { WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY, TERRAIN_WALL } from 'game/constants';
 import { Source, StructureSpawn, StructureExtension, ConstructionSite } from 'game/prototypes';
 import { createConstructionSite } from 'game';
 
@@ -237,6 +237,7 @@ export function act_miner(creepInfo, controller, winObjective) {
                     let created = 0;
                     for (const pos of extensionPositions) {
                         if (created >= EXTENSIONS_PER_MINER) break;
+                        if (getTerrainAt(pos) == TERRAIN_WALL) continue;
                         
                         const result = createConstructionSite(pos, StructureExtension);
                         if (result.object) {
