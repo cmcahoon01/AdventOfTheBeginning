@@ -20,6 +20,8 @@ export class BuildOrder {
     constructor(screepController) {
         this.screepController = screepController;
         this.buildOrderTemplate = BUILD_ORDER_TEMPLATE;
+        // Track the job type of the creep currently being spawned
+        this.pendingSpawnJob = null;
     }
 
     // Calculate total available energy from spawn and all containers
@@ -82,6 +84,29 @@ export class BuildOrder {
         return { job: 'hauler', body: HAULER_BODY, cost: HAULER_COST };
     }
 
+    // Check if there's a spawning creep that hasn't been added to memory yet
+    checkAndAddSpawningCreep() {
+        const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
+        
+        // If spawn is spawning a creep and we have a pending job
+        if (spawn && spawn.spawning && this.pendingSpawnJob) {
+            const creepId = spawn.spawning.creep.id;
+            
+            // Check if this creep is already in our controller
+            const alreadyAdded = this.screepController.creeps.some(c => c.id === creepId);
+            
+            if (!alreadyAdded) {
+                // Add the creep to memory with its job
+                this.screepController.addCreep(creepId, this.pendingSpawnJob);
+                console.log(`Added spawning ${this.pendingSpawnJob} with id ${creepId} to memory`);
+                this.pendingSpawnJob = null;
+            }
+        } else if (!spawn || !spawn.spawning) {
+            // Clear pending job if spawn is no longer spawning
+            this.pendingSpawnJob = null;
+        }
+    }
+
     // Attempt to spawn the next creep in the build order
     trySpawnNextCreep() {
         const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
@@ -106,9 +131,9 @@ export class BuildOrder {
         // Try to spawn the creep
         const result = spawn.spawnCreep(nextCreep.body);
         if (result && result.object && !result.error) {
-            // Add the newly spawned creep to the controller
-            this.screepController.addCreep(spawn.spawning.creep.id, nextCreep.job);
-            console.log(`Spawned ${nextCreep.job} (cost: ${nextCreep.cost}, available energy: ${totalEnergy})`);
+            // Mark the job as pending - we'll add it to memory once spawn.spawning is available
+            this.pendingSpawnJob = nextCreep.job;
+            console.log(`Started spawning ${nextCreep.job} (cost: ${nextCreep.cost}, available energy: ${totalEnergy})`);
             return true;
         }
 
