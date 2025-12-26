@@ -8,18 +8,17 @@ export const HAULER_BODY = [WORK, CARRY, MOVE, MOVE];
 export const HAULER_COST = 250; // 100 + 50 + 50 + 50
 
 // Helper function to check if a position has a road or road construction site
-function hasRoadOrConstructionSite(pos) {
+function hasRoadOrConstructionSite(pos, roads, constructionSites) {
     // Check for existing roads
-    const roads = getObjectsByPrototype(StructureRoad);
     const hasRoad = roads.some(road => road.x === pos.x && road.y === pos.y);
     if (hasRoad) return true;
     
     // Check for road construction sites
-    const constructionSites = getObjectsByPrototype(ConstructionSite);
     const hasRoadConstruction = constructionSites.some(site => 
         site.x === pos.x && 
         site.y === pos.y && 
-        site.structure instanceof StructureRoad
+        site.structure && 
+        site.structure.constructor === StructureRoad
     );
     return hasRoadConstruction;
 }
@@ -106,14 +105,17 @@ export function act_hauler(creepInfo, controller, winObjective) {
                 const nextPos = getNextMovePosition(creep, target);
                 
                 if (nextPos) {
+                    // Cache these queries to avoid multiple calls
+                    const roads = getObjectsByPrototype(StructureRoad);
+                    const constructionSites = getObjectsByPrototype(ConstructionSite);
+                    
                     // Check if the next position has a road or construction site
-                    if (!hasRoadOrConstructionSite(nextPos)) {
+                    if (!hasRoadOrConstructionSite(nextPos, roads, constructionSites)) {
                         // Place a road construction site
                         createConstructionSite(nextPos, StructureRoad);
                     }
                     
                     // Check if there's a construction site at the next position to build
-                    const constructionSites = getObjectsByPrototype(ConstructionSite);
                     const nextPosConstruction = constructionSites.find(site => 
                         site.x === nextPos.x && site.y === nextPos.y
                     );
