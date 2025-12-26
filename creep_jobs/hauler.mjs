@@ -17,8 +17,7 @@ function hasRoadOrConstructionSite(pos, roads, constructionSites) {
     const hasRoadConstruction = constructionSites.some(site => 
         site.x === pos.x && 
         site.y === pos.y && 
-        site.structure && 
-        site.structure.constructor === StructureRoad
+        site.structure instanceof StructureRoad
     );
     return hasRoadConstruction;
 }
@@ -115,9 +114,11 @@ export function act_hauler(creepInfo, controller, winObjective) {
                         createConstructionSite(nextPos, StructureRoad);
                     }
                     
-                    // Check if there's a construction site at the next position to build
+                    // Check if there's a road construction site at the next position to build
                     const nextPosConstruction = constructionSites.find(site => 
-                        site.x === nextPos.x && site.y === nextPos.y
+                        site.x === nextPos.x && 
+                        site.y === nextPos.y &&
+                        site.structure instanceof StructureRoad
                     );
                     
                     if (nextPosConstruction) {
