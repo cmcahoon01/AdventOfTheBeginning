@@ -35,10 +35,10 @@ export class BuildOrder {
         }
 
         // Get energy from all containers
-        const containers = getObjectsByPrototype(StructureContainer).filter(c => c.my);
-        for (const container of containers) {
-            if (container.store) {
-                totalEnergy += container.store[RESOURCE_ENERGY] || 0;
+        const extension = getObjectsByPrototype(StructureExtension).filter(c => c.my);
+        for (const extension of extensions) {
+            if (extension.store) {
+                totalEnergy += extension.store[RESOURCE_ENERGY] || 0;
             }
         }
 
