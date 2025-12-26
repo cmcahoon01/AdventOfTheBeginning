@@ -8,6 +8,7 @@ class CreepInfo {
     constructor(id, job) {
         this.id = id;
         this.job = job;
+        this.memory = {}; // Dictionary to store creep-specific state/memory
     }
 }
 
@@ -51,7 +52,7 @@ export class ScreepController {
             if (!creep.spawning) {
                 const actionFn = this.jobActions[creepInfo.job];
                 if (actionFn) {
-                    actionFn(creepInfo.id);
+                    actionFn(creepInfo);
                 }
             }
             
