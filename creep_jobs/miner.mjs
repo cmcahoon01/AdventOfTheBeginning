@@ -251,7 +251,8 @@ export function act_miner(creepInfo, controller, winObjective) {
                 const allConstructionSites = getObjectsByPrototype(ConstructionSite).filter(c => c.my);
                 const nearbyConstructionSites = allConstructionSites.filter(site => {
                     const range = getRange(creep, site);
-                    return range <= 3; // Within range to build
+                    // Only consider construction sites within 1 tile (the 8 surrounding tiles)
+                    return range <= 1;
                 });
                 
                 if (nearbyConstructionSites.length > 0) {
@@ -264,9 +265,18 @@ export function act_miner(creepInfo, controller, winObjective) {
                         }
                     }
                 } else {
-                    // No more construction sites, move to stage 2
-                    creepInfo.memory.stage = 2;
-                    console.log(`Miner ${creepInfo.id} moving to stage 2`);
+                    // Check if we have 5 extensions nearby (construction is complete)
+                    const allExtensions = getObjectsByPrototype(StructureExtension).filter(e => e.my);
+                    const nearbyExtensions = allExtensions.filter(ext => {
+                        const range = getRange(creep, ext);
+                        return range <= 1;
+                    });
+                    
+                    if (nearbyExtensions.length >= 5) {
+                        // All extensions are built, move to stage 2
+                        creepInfo.memory.stage = 2;
+                        console.log(`Miner ${creepInfo.id} moving to stage 2 with ${nearbyExtensions.length} extensions`);
+                    }
                 }
             } else if (creepInfo.memory.stage === 2) {
                 // Stage 2: Deposit to least full extension
@@ -275,7 +285,7 @@ export function act_miner(creepInfo, controller, winObjective) {
                 const allExtensions = getObjectsByPrototype(StructureExtension).filter(e => e.my);
                 const nearbyExtensions = allExtensions.filter(ext => {
                     const range = getRange(creep, ext);
-                    return range <= 3; // Within range to transfer
+                    return range <= 1; // Only extensions immediately adjacent
                 });
                 
                 if (nearbyExtensions.length > 0) {
@@ -285,7 +295,10 @@ export function act_miner(creepInfo, controller, winObjective) {
                     
                     for (const ext of nearbyExtensions) {
                         const energy = ext.store[RESOURCE_ENERGY] || 0;
-                        if (energy < minEnergy) {
+                        const capacity = ext.store.getCapacity(RESOURCE_ENERGY);
+                        
+                        // Only consider extensions that are not full
+                        if (energy < capacity && energy < minEnergy) {
                             minEnergy = energy;
                             leastFullExtension = ext;
                         }
