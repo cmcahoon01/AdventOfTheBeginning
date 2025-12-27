@@ -97,13 +97,14 @@ export function act_hauler(creepInfo, controller, winObjective) {
                     );
                 if (roadUnder && creep.store[RESOURCE_ENERGY] >= 10){
                     const buildResult = creep.build(constructionResult.object);
-                    if (!buildResult.error) {
-                        // Get the next position we'll move to
-                        const nextPos = getNextMovePosition(creep, target);
-                        
-                        if (nextPos && creep.store[RESOURCE_ENERGY] >= 10) {
-                            createConstructionSite(nextPos, StructureRoad);
-                        }
+                    
+                }
+                if (creep.store[RESOURCE_ENERGY] >= 10) {
+                    // Get the next position we'll move to
+                    const nextPos = getNextMovePosition(creep, target);
+                    
+                    if (nextPos && creep.store[RESOURCE_ENERGY] >= 10) {
+                        createConstructionSite(nextPos, StructureRoad);
                     }
                 }
                 
