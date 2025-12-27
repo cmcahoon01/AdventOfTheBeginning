@@ -4,7 +4,7 @@ import { Creep, StructureSpawn, StructureRampart, Structure } from 'game/prototy
 
 // Body configuration for cleric creeps
 export const CLERIC_BODY = [MOVE, MOVE, RANGED_ATTACK, HEAL];
-export const CLERIC_COST = 500; // 50 + 50 + 150 + 250
+export const CLERIC_COST = 500; // MOVE(50) + MOVE(50) + RANGED_ATTACK(150) + HEAL(250) = 500
 
 // Kiting behavior constants
 const DESIRED_RANGE = 3;
