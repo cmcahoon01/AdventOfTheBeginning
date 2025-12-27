@@ -7,6 +7,8 @@ import { createConstructionSite } from 'game';
 export const HAULER_BODY = [WORK, CARRY, MOVE, MOVE];
 export const HAULER_COST = 250; // 100 + 50 + 50 + 50
 
+const MAX_ROAD_CONSTRUCTION = 6;
+
 // Helper function to get the next position the creep will move to
 function getNextMovePosition(creep, target) {
     // Find the path to the target
@@ -90,11 +92,11 @@ export function act_hauler(creepInfo, controller, winObjective) {
             
             if (target) {
                 const constructionSites = getObjectsByPrototype(ConstructionSite);
-                const roadUnder = constructionSites.find(site => 
+                const roadConstructionSites = constructionSites.filter(site =>
+                    site.structure instanceof StructureRoad);
+                const roadUnder = roadConstructionSites.find(site => 
                         site.x === creep.x && 
-                        site.y === creep.y &&
-                        site.structure instanceof StructureRoad
-                    );
+                        site.y === creep.y);
                 if (roadUnder && creep.store[RESOURCE_ENERGY] >= 10){
                     creep.build(roadUnder);
                 }
@@ -106,7 +108,9 @@ export function act_hauler(creepInfo, controller, winObjective) {
                         const roads =  getObjectsByPrototype(StructureRoad);
                         const roadThereAlready = roads.find(site => 
                             site.x === nextPos.x && site.y === nextPos.y);
-                        if (!roadThereAlready){
+                        const siteThereAleady = roadConstructionSites.find(site =>
+                            site.x === nextPos.x && site.y === nextPos.y);
+                        if (!roadThereAlready && !siteThereAleady && MAX_ROAD_CONSTRUCTION){
                             createConstructionSite(nextPos, StructureRoad);
                         }
                     }
