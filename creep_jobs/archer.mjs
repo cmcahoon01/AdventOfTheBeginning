@@ -1,6 +1,6 @@
 import { getObjectById, getObjectsByPrototype, getRange } from 'game/utils';
 import { RANGED_ATTACK, MOVE, ERR_NOT_IN_RANGE } from 'game/constants';
-import { Creep, StructureSpawn } from 'game/prototypes';
+import { Creep, StructureSpawn, StructureRampart } from 'game/prototypes';
 
 // Body configuration for archer creeps
 export const ARCHER_BODY = [MOVE, RANGED_ATTACK];
@@ -17,15 +17,27 @@ export function act_archer(creepInfo, controller, winObjective) {
     }
 
     // Find all enemy creeps
-    const hostileCreeps = getObjectsByPrototype(Creep).filter(i => !i.my);
+    const allHostileCreeps = getObjectsByPrototype(Creep).filter(i => !i.my);
     
-    // If there are no enemies, idle (move towards enemy spawn)
+    // Get all ramparts
+    const ramparts = getObjectsByPrototype(StructureRampart);
+    
+    // Filter out enemies that are standing on ramparts
+    const hostileCreeps = allHostileCreeps.filter(enemy => {
+        // Check if any rampart is at the same position as this enemy
+        const onRampart = ramparts.some(rampart => 
+            rampart.x === enemy.x && rampart.y === enemy.y
+        );
+        return !onRampart;
+    });
+    
+    // If there are no targetable enemies (all on ramparts or none exist), idle (attack enemy spawn)
     if (hostileCreeps.length === 0) {
         idle(creep);
         return;
     }
 
-    // Find the closest enemy creep
+    // Find the closest enemy creep that is not on a rampart
     const closestEnemy = creep.findClosestByRange(hostileCreeps);
     
     if (closestEnemy) {
@@ -67,6 +79,17 @@ export function act_archer(creepInfo, controller, winObjective) {
 function idle(creep) {
     const enemySpawn = getObjectsByPrototype(StructureSpawn).find(i => !i.my);
     if (enemySpawn) {
-        creep.moveTo(enemySpawn);
+        // Move towards the enemy spawn
+        const range = getRange(creep, enemySpawn);
+        
+        // Attack the enemy spawn if in range
+        if (range <= 3) {
+            creep.rangedAttack(enemySpawn);
+        }
+        
+        // Move closer if not already in range
+        if (range > 3) {
+            creep.moveTo(enemySpawn);
+        }
     }
 }
