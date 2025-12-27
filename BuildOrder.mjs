@@ -2,6 +2,7 @@ import { getObjectsByPrototype } from 'game/utils';
 import { StructureSpawn, StructureExtension } from 'game/prototypes';
 import { RESOURCE_ENERGY } from 'game/constants';
 import { FIGHTER_BODY, FIGHTER_COST } from './creep_jobs/fighter.mjs';
+import { ARCHER_BODY, ARCHER_COST } from './creep_jobs/archer.mjs';
 import { HAULER_BODY, HAULER_COST } from './creep_jobs/hauler.mjs';
 import { MINER_BODY, MINER_COST } from './creep_jobs/miner.mjs';
 
@@ -9,6 +10,7 @@ import { MINER_BODY, MINER_COST } from './creep_jobs/miner.mjs';
 // Each entry specifies the job type, body, and cost
 const BUILD_ORDER_TEMPLATE = [
     { job: 'fighter', body: FIGHTER_BODY, cost: FIGHTER_COST },
+    { job: 'archer', body: ARCHER_BODY, cost: ARCHER_COST },
     { job: 'hauler', body: HAULER_BODY, cost: HAULER_COST },
     { job: 'miner', body: MINER_BODY, cost: MINER_COST },
     { job: 'miner', body: MINER_BODY, cost: MINER_COST },
@@ -52,6 +54,7 @@ export class BuildOrder {
         // Count creeps by job type
         const creepCounts = {
             fighter: 0,
+            archer: 0,
             hauler: 0,
             miner: 0
         };

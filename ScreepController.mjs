@@ -1,5 +1,6 @@
 import { getObjectById } from 'game/utils';
 import { act_fighter } from './creep_jobs/fighter.mjs';
+import { act_archer } from './creep_jobs/archer.mjs';
 import { act_hauler } from './creep_jobs/hauler.mjs';
 import { act_miner } from './creep_jobs/miner.mjs';
 
@@ -19,6 +20,7 @@ export class ScreepController {
         // Map job names to their action functions
         this.jobActions = {
             fighter: act_fighter,
+            archer: act_archer,
             hauler: act_hauler,
             miner: act_miner
         };
