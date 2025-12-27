@@ -55,28 +55,28 @@ function idle(creep){
         return;
     }
     
-    // Get all ramparts
-    const ramparts = getObjectsByPrototype(StructureRampart);
+    // First priority: Try to attack the enemy spawn directly
+    const attackResult = creep.attack(enemySpawn);
     
-    if (ramparts.length === 0) {
-        // No ramparts, just move to enemy spawn
-        creep.moveTo(enemySpawn);
-        return;
-    }
-    
-    // Find the rampart closest to the enemy spawn
-    const targetRampart = enemySpawn.findClosestByRange(ramparts);
-    
-    if (targetRampart) {
-        // Try to attack the rampart
-        const attackResult = creep.attack(targetRampart);
+    if (attackResult === ERR_NOT_IN_RANGE) {
+        // Can't reach spawn, check if ramparts are blocking
+        const ramparts = getObjectsByPrototype(StructureRampart);
         
-        // If the rampart is not in range, move towards it
-        if (attackResult === ERR_NOT_IN_RANGE) {
-            creep.moveTo(targetRampart);
+        if (ramparts.length > 0) {
+            // Find the closest rampart to the fighter to clear the path
+            const closestRampart = creep.findClosestByRange(ramparts);
+            
+            if (closestRampart) {
+                const rampartAttackResult = creep.attack(closestRampart);
+                if (rampartAttackResult === ERR_NOT_IN_RANGE) {
+                    // Move towards the rampart to attack it
+                    creep.moveTo(closestRampart);
+                }
+                return;
+            }
         }
-    } else {
-        // No ramparts reachable, move to enemy spawn
+        
+        // No ramparts or can't find one, just move towards spawn
         creep.moveTo(enemySpawn);
     }
 }
