@@ -5,6 +5,7 @@ import { FIGHTER_BODY, FIGHTER_COST } from './creep_jobs/fighter.mjs';
 import { ARCHER_BODY, ARCHER_COST } from './creep_jobs/archer.mjs';
 import { HAULER_BODY, HAULER_COST } from './creep_jobs/hauler.mjs';
 import { MINER_BODY, MINER_COST } from './creep_jobs/miner.mjs';
+import { CLERIC_BODY, CLERIC_COST } from './creep_jobs/cleric.mjs';
 
 // Build order configuration
 // Each entry specifies the job type, body, and cost
@@ -56,7 +57,8 @@ export class BuildOrder {
             fighter: 0,
             archer: 0,
             hauler: 0,
-            miner: 0
+            miner: 0,
+            cleric: 0
         };
 
         for (const creepInfo of creeps) {
