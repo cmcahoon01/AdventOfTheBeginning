@@ -103,7 +103,12 @@ export function act_hauler(creepInfo, controller, winObjective) {
                     const nextPos = getNextMovePosition(creep, target);
                     
                     if (nextPos && creep.store[RESOURCE_ENERGY] >= 10) {
-                        createConstructionSite(nextPos, StructureRoad);
+                        const roads =  getObjectsByPrototype(StructureRoad);
+                        const roadThereAlready = roads.find(site => 
+                            site.x === nextPos.x && site.y === nextPos.y);
+                        if (!roadThereAlready){
+                            createConstructionSite(nextPos, StructureRoad);
+                        }
                     }
                 }
                 
