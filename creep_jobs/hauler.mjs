@@ -99,11 +99,11 @@ export function act_hauler(creepInfo, controller, winObjective) {
                 if (roadUnder && creep.store[RESOURCE_ENERGY] >= 10){
                     creep.build(roadUnder);
                 }
-                if (creep.store[RESOURCE_ENERGY] >= 10) {
+                if (creep.store[RESOURCE_ENERGY] >= 5) {
                     // Get the next position we'll move to
                     const nextPos = getNextMovePosition(creep, target);
                     
-                    if (nextPos && creep.store[RESOURCE_ENERGY] >= 10) {
+                    if (nextPos && creep.store[RESOURCE_ENERGY] >= 5) {
                         const roads =  getObjectsByPrototype(StructureRoad);
                         const roadThereAlready = roads.find(site => 
                             site.x === nextPos.x && site.y === nextPos.y);
@@ -113,6 +113,11 @@ export function act_hauler(creepInfo, controller, winObjective) {
                             createConstructionSite(nextPos, StructureRoad);
                         }
                     }
+                }
+
+                if (creep.store[RESOURCE_ENERGY] < 5) { 
+                    creepInfo.memory.state = 'mining';
+                    return;
                 }
                 
                 // Now move towards the target
