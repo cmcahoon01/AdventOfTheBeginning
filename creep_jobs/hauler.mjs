@@ -75,7 +75,9 @@ export function act_hauler(creepInfo, controller, winObjective) {
         // This forces haulers to use the central sources near the middle of the map
         const allSources = getObjectsByPrototype(Source);
         const centralSources = allSources.filter(source => source.y >= 30 && source.y <= 70);
-        const closestSource = creep.findClosestByRange(centralSources);
+        // Fallback to all sources if no central sources exist
+        const sourcesToUse = centralSources.length > 0 ? centralSources : allSources;
+        const closestSource = creep.findClosestByRange(sourcesToUse);
 
         if (closestSource) {
             // Try to harvest
