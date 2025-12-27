@@ -246,7 +246,6 @@ export function act_miner(creepInfo, controller, winObjective) {
                     }
                     
                     creepInfo.memory.extensionsCreated = true;
-                    console.log("created construction sites at" + extensionPositions[0].x + " " + extensionPositions[0].y );                
                 }
                 
                 // Find construction sites around the miner
@@ -256,7 +255,6 @@ export function act_miner(creepInfo, controller, winObjective) {
                     // Only consider construction sites within 1 tile (the 8 surrounding tiles)
                     return range <= 1;
                 });
-                console.log("all "+ allConstructionSites.length+ " less "+ nearbyConstructionSites.length);
                 
                 if (nearbyConstructionSites.length > 0) {
                     // Build the nearest construction site
