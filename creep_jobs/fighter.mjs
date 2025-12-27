@@ -15,26 +15,52 @@ export function act_fighter(creepInfo, controller, winObjective) {
     // Find all enemy creeps
     const allHostileCreeps = getObjectsByPrototype(Creep).filter(i => !i.my);
     
-    // Get all ramparts
-    const ramparts = getObjectsByPrototype(StructureRampart);
-    
-    // Filter out enemies that are standing on ramparts
-    const hostileCreeps = allHostileCreeps.filter(enemy => {
-        // Check if any rampart is at the same position as this enemy
-        const onRampart = ramparts.some(rampart => 
-            rampart.x === enemy.x && rampart.y === enemy.y
-        );
-        return !onRampart;
-    });
-    
-    // If there are no targetable enemies (all on ramparts or none exist), idle
-    if (hostileCreeps.length === 0) {
+    // If there are no enemies at all, idle
+    if (allHostileCreeps.length === 0) {
         idle(creep);
         return;
     }
-
-    // Find the closest enemy creep that is not on a rampart
-    const target = creep.findClosestByRange(hostileCreeps);
+    
+    // Get all ramparts
+    const ramparts = getObjectsByPrototype(StructureRampart);
+    
+    // Create a Set of rampart positions for O(1) lookup
+    const rampartPositions = new Set(ramparts.map(r => `${r.x},${r.y}`));
+    
+    // Separate enemies into those on ramparts and those not on ramparts
+    const enemiesNotOnRamparts = [];
+    const enemiesOnRamparts = [];
+    
+    allHostileCreeps.forEach(enemy => {
+        const onRampart = rampartPositions.has(`${enemy.x},${enemy.y}`);
+        if (onRampart) {
+            enemiesOnRamparts.push(enemy);
+        } else {
+            enemiesNotOnRamparts.push(enemy);
+        }
+    });
+    
+    let target = null;
+    
+    // First priority: Attack enemies NOT on ramparts
+    if (enemiesNotOnRamparts.length > 0) {
+        target = creep.findClosestByRange(enemiesNotOnRamparts);
+    } 
+    // Second priority: If all enemies are on ramparts, check if they're reachable
+    else if (enemiesOnRamparts.length > 0) {
+        // Find the closest enemy on a rampart
+        const closestEnemyOnRampart = creep.findClosestByRange(enemiesOnRamparts);
+        
+        // Check if the enemy is reachable (i.e., can we get adjacent to them?)
+        // An enemy is unreachable if they are completely surrounded by ramparts
+        if (isReachableForMelee(closestEnemyOnRampart, rampartPositions)) {
+            target = closestEnemyOnRampart;
+        } else {
+            // Enemy is unreachable, use idle action
+            idle(creep);
+            return;
+        }
+    }
     
     if (target) {
         // Try to attack the target
@@ -47,6 +73,27 @@ export function act_fighter(creepInfo, controller, winObjective) {
     } else {
         idle(creep);
     }
+}
+
+// Helper function to check if an enemy on a rampart is reachable for melee attack
+// An enemy is reachable if at least one adjacent tile is NOT occupied by a rampart
+function isReachableForMelee(enemy, rampartPositions) {
+    // Check all 8 adjacent positions around the enemy
+    const adjacentPositions = [
+        {x: enemy.x - 1, y: enemy.y - 1}, // top-left
+        {x: enemy.x, y: enemy.y - 1},     // top
+        {x: enemy.x + 1, y: enemy.y - 1}, // top-right
+        {x: enemy.x - 1, y: enemy.y},     // left
+        {x: enemy.x + 1, y: enemy.y},     // right
+        {x: enemy.x - 1, y: enemy.y + 1}, // bottom-left
+        {x: enemy.x, y: enemy.y + 1},     // bottom
+        {x: enemy.x + 1, y: enemy.y + 1}  // bottom-right
+    ];
+    
+    // If at least one adjacent position doesn't have a rampart, the enemy is reachable
+    return adjacentPositions.some(pos => {
+        return !rampartPositions.has(`${pos.x},${pos.y}`);
+    });
 }
 
 function idle(creep){
