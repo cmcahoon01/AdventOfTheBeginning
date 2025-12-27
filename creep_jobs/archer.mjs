@@ -85,10 +85,8 @@ function idle(creep) {
         // Attack the enemy spawn if in range
         if (range <= 3) {
             creep.rangedAttack(enemySpawn);
-        }
-        
-        // Move closer if not already in range
-        if (range > 3) {
+        } else {
+            // Move closer if not in range
             creep.moveTo(enemySpawn);
         }
     }
