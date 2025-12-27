@@ -19,26 +19,40 @@ export function act_archer(creepInfo, controller, winObjective) {
     // Find all enemy creeps
     const allHostileCreeps = getObjectsByPrototype(Creep).filter(i => !i.my);
     
-    // Get all ramparts
-    const ramparts = getObjectsByPrototype(StructureRampart);
-    
-    // Filter out enemies that are standing on ramparts
-    const hostileCreeps = allHostileCreeps.filter(enemy => {
-        // Check if any rampart is at the same position as this enemy
-        const onRampart = ramparts.some(rampart => 
-            rampart.x === enemy.x && rampart.y === enemy.y
-        );
-        return !onRampart;
-    });
-    
-    // If there are no targetable enemies (all on ramparts or none exist), idle (attack enemy spawn)
-    if (hostileCreeps.length === 0) {
+    // If there are no enemies at all, idle
+    if (allHostileCreeps.length === 0) {
         idle(creep);
         return;
     }
-
-    // Find the closest enemy creep that is not on a rampart
-    const closestEnemy = creep.findClosestByRange(hostileCreeps);
+    
+    // Get all ramparts
+    const ramparts = getObjectsByPrototype(StructureRampart);
+    
+    // Separate enemies into those on ramparts and those not on ramparts
+    const enemiesNotOnRamparts = [];
+    const enemiesOnRamparts = [];
+    
+    allHostileCreeps.forEach(enemy => {
+        const onRampart = ramparts.some(rampart => 
+            rampart.x === enemy.x && rampart.y === enemy.y
+        );
+        if (onRampart) {
+            enemiesOnRamparts.push(enemy);
+        } else {
+            enemiesNotOnRamparts.push(enemy);
+        }
+    });
+    
+    let closestEnemy = null;
+    
+    // First priority: Target enemies NOT on ramparts
+    if (enemiesNotOnRamparts.length > 0) {
+        closestEnemy = creep.findClosestByRange(enemiesNotOnRamparts);
+    } 
+    // Second priority: If all enemies are on ramparts, archers can still shoot them
+    else if (enemiesOnRamparts.length > 0) {
+        closestEnemy = creep.findClosestByRange(enemiesOnRamparts);
+    }
     
     if (closestEnemy) {
         const range = getRange(creep, closestEnemy);
