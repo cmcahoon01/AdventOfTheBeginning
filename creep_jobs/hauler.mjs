@@ -89,7 +89,7 @@ export function act_hauler(creepInfo, controller, winObjective) {
             }
             
             if (target) {
-                constructionSites = getObjectsByPrototype(ConstructionSite);
+                const constructionSites = getObjectsByPrototype(ConstructionSite);
                 const roadUnder = constructionSites.find(site => 
                         site.x === creep.x && 
                         site.y === creep.y &&
