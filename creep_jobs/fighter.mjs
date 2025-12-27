@@ -31,5 +31,8 @@ export function act_fighter(creepInfo, controller, winObjective) {
         if (attackResult === ERR_NOT_IN_RANGE) {
             creep.moveTo(target);
         }
+    } else {
+        const enemySpawn = getObjectsByPrototype(StructureSpawn).find(i => !i.my);
+        creep.moveTo(enemySpawn);
     }
 }
