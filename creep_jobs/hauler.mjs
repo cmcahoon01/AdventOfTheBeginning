@@ -96,6 +96,8 @@ export function act_hauler(creepInfo, controller, winObjective) {
                     
                     const constructionResult = createConstructionSite(nextPos, StructureRoad);
                     if (!constructionResult.error && constructionResult.object !== undefined){
+                        console.log("build target:")
+                        console.log(constructionResult)
                         const buildResult = creep.build(constructionResult.object);
                         console.log("build result:")
                         console.log(buildResult)
