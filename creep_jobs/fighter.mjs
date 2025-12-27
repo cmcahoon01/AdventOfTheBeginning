@@ -17,6 +17,7 @@ export function act_fighter(creepInfo, controller, winObjective) {
     
     // If there are no enemies, do nothing
     if (hostileCreeps.length === 0) {
+        idle(creep);
         return;
     }
 
@@ -32,7 +33,11 @@ export function act_fighter(creepInfo, controller, winObjective) {
             creep.moveTo(target);
         }
     } else {
-        const enemySpawn = getObjectsByPrototype(StructureSpawn).find(i => !i.my);
-        creep.moveTo(enemySpawn);
+        idle(creep);
     }
+}
+
+function idle(creep){
+    const enemySpawn = getObjectsByPrototype(StructureSpawn).find(i => !i.my);
+    creep.moveTo(enemySpawn);
 }
