@@ -8,6 +8,7 @@ export const ARCHER_COST = 200; // 50 + 150
 
 // Kiting behavior constants
 const DESIRED_RANGE = 3;
+const ARENA_SIZE = 100; // Arena dimensions
 
 // Helper function to calculate Euclidean distance
 function euclideanDistance(pos1, pos2) {
@@ -17,7 +18,7 @@ function euclideanDistance(pos1, pos2) {
 }
 
 // Get all valid adjacent positions that the creep can move to
-function getValidAdjacentPositions(creep) {
+function getValidAdjacentPositions(creep, allCreeps, allStructures) {
     const adjacentOffsets = [
         { x: 0, y: -1 },   // TOP
         { x: 1, y: -1 },   // TOP_RIGHT
@@ -31,15 +32,11 @@ function getValidAdjacentPositions(creep) {
     
     const validPositions = [];
     
-    // Get all structures and creeps to check for obstacles
-    const allCreeps = getObjectsByPrototype(Creep);
-    const allStructures = getObjectsByPrototype(Structure);
-    
     for (const offset of adjacentOffsets) {
         const pos = { x: creep.x + offset.x, y: creep.y + offset.y };
         
-        // Check if position is within bounds (assuming 100x100 arena)
-        if (pos.x < 0 || pos.x >= 100 || pos.y < 0 || pos.y >= 100) {
+        // Check if position is within bounds
+        if (pos.x < 0 || pos.x >= ARENA_SIZE || pos.y < 0 || pos.y >= ARENA_SIZE) {
             continue;
         }
         
@@ -72,8 +69,13 @@ function getValidAdjacentPositions(creep) {
 }
 
 // Find the best retreat position from enemies
-function findBestRetreatPosition(creep, enemies) {
-    const validPositions = getValidAdjacentPositions(creep);
+function findBestRetreatPosition(creep, enemies, allCreeps, allStructures) {
+    // Guard against empty enemies array
+    if (enemies.length === 0) {
+        return null;
+    }
+    
+    const validPositions = getValidAdjacentPositions(creep, allCreeps, allStructures);
     
     if (validPositions.length === 0) {
         return null; // No valid positions to move to
@@ -125,8 +127,12 @@ export function act_archer(creepInfo, controller, winObjective) {
         return;
     }
 
+    // Cache expensive operations once per archer per tick
+    const allCreeps = getObjectsByPrototype(Creep);
+    const allStructures = getObjectsByPrototype(Structure);
+    
     // Find all enemy creeps
-    const allHostileCreeps = getObjectsByPrototype(Creep).filter(i => !i.my);
+    const allHostileCreeps = allCreeps.filter(i => !i.my);
     
     // If there are no enemies at all, idle
     if (allHostileCreeps.length === 0) {
@@ -174,7 +180,7 @@ export function act_archer(creepInfo, controller, winObjective) {
             creep.rangedAttack(closestEnemy);
             
             // Then find best position to retreat to
-            const retreatPos = findBestRetreatPosition(creep, allHostileCreeps);
+            const retreatPos = findBestRetreatPosition(creep, allHostileCreeps, allCreeps, allStructures);
             if (retreatPos) {
                 creep.moveTo(retreatPos);
             }
