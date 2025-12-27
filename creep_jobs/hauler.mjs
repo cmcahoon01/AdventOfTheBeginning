@@ -89,20 +89,20 @@ export function act_hauler(creepInfo, controller, winObjective) {
             }
             
             if (target) {
-                // Get the next position we'll move to
-                const nextPos = getNextMovePosition(creep, target);
-                
-                if (nextPos && creep.store[RESOURCE_ENERGY] >= 10) {
-                    
-                    const constructionResult = createConstructionSite(nextPos, StructureRoad);
-                    if (!constructionResult.error && constructionResult.object !== undefined){
-                        console.log("build target:")
-                        console.log(constructionResult)
-                        const buildResult = creep.build(constructionResult.object);
-                        console.log("build result:")
-                        console.log(buildResult)
-                    } else {
-                        console.log("construction error: "+constructionResult.error)
+                const roadUnder = constructionSites.find(site => 
+                        site.x === creep.x && 
+                        site.y === creep.y &&
+                        site.structure instanceof StructureRoad
+                    );
+                if (roadUnder && creep.store[RESOURCE_ENERGY] >= 10){
+                    const buildResult = creep.build(constructionResult.object);
+                    if (!buildResult.error) {
+                        // Get the next position we'll move to
+                        const nextPos = getNextMovePosition(creep, target);
+                        
+                        if (nextPos && creep.store[RESOURCE_ENERGY] >= 10) {
+                            createConstructionSite(nextPos, StructureRoad);
+                        }
                     }
                 }
                 
