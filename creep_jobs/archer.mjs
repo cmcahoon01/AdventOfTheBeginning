@@ -6,6 +6,10 @@ import { Creep, StructureSpawn } from 'game/prototypes';
 export const ARCHER_BODY = [MOVE, RANGED_ATTACK];
 export const ARCHER_COST = 200; // 50 + 150
 
+// Kiting behavior constants
+const DESIRED_RANGE = 3;
+const RETREAT_DISTANCE = 2;
+
 export function act_archer(creepInfo, controller, winObjective) {
     const creep = getObjectById(creepInfo.id);
     if (!creep) {
@@ -26,9 +30,8 @@ export function act_archer(creepInfo, controller, winObjective) {
     
     if (closestEnemy) {
         const range = getRange(creep, closestEnemy);
-        const DESIRED_RANGE = 3;
         
-        // If enemy is too close (within range 3), move away first
+        // If enemy is too close (within range 3), move away first then attack
         if (range < DESIRED_RANGE) {
             // Calculate direction away from enemy
             const dx = creep.x - closestEnemy.x;
@@ -36,19 +39,22 @@ export function act_archer(creepInfo, controller, winObjective) {
             
             // Move away from the enemy (move towards a position further away)
             const targetPos = {
-                x: creep.x + Math.sign(dx) * 2,
-                y: creep.y + Math.sign(dy) * 2
+                x: creep.x + Math.sign(dx) * RETREAT_DISTANCE,
+                y: creep.y + Math.sign(dy) * RETREAT_DISTANCE
             };
             
             creep.moveTo(targetPos);
             
-            // After moving away, still attack if enemy is within ranged attack range (3)
-            // The rangedAttack will work based on current position after the move command
+            // After moving away, attack the enemy (both happen in same tick)
+            // The rangedAttack uses current position before movement completes
             creep.rangedAttack(closestEnemy);
         } else if (range > DESIRED_RANGE) {
             // If enemy is too far, move closer
             creep.moveTo(closestEnemy);
-            // Don't attack yet - wait until we're in range
+            // Also attack if we're within ranged attack range (3)
+            if (range <= 3) {
+                creep.rangedAttack(closestEnemy);
+            }
         } else {
             // At exactly range 3, attack without moving
             creep.rangedAttack(closestEnemy);
