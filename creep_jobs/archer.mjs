@@ -34,22 +34,23 @@ export function act_archer(creepInfo, controller, winObjective) {
             const dx = creep.x - closestEnemy.x;
             const dy = creep.y - closestEnemy.y;
             
-            // Move away from the enemy
+            // Move away from the enemy (move towards a position further away)
             const targetPos = {
-                x: creep.x + (dx > 0 ? 1 : dx < 0 ? -1 : 0),
-                y: creep.y + (dy > 0 ? 1 : dy < 0 ? -1 : 0)
+                x: creep.x + Math.sign(dx) * 2,
+                y: creep.y + Math.sign(dy) * 2
             };
             
             creep.moveTo(targetPos);
+            
+            // After moving away, still attack if enemy is within ranged attack range (3)
+            // The rangedAttack will work based on current position after the move command
+            creep.rangedAttack(closestEnemy);
         } else if (range > DESIRED_RANGE) {
             // If enemy is too far, move closer
             creep.moveTo(closestEnemy);
-        }
-        // If at exactly range 3, don't move
-        
-        // Always try to attack after moving (or if at correct range)
-        // rangedAttack works up to range 3
-        if (range <= DESIRED_RANGE) {
+            // Don't attack yet - wait until we're in range
+        } else {
+            // At exactly range 3, attack without moving
             creep.rangedAttack(closestEnemy);
         }
     } else {
