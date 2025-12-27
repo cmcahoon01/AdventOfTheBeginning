@@ -135,8 +135,8 @@ export function act_cleric(creepInfo, controller, winObjective) {
     const allHostileCreeps = allCreeps.filter(i => !i.my);
     const myCreeps = allCreeps.filter(i => i.my);
     
-    // Find damaged allies (including self)
-    const damagedAllies = myCreeps.filter(c => c.hits < c.hitsMax);
+    // Find damaged friendly creeps (including self)
+    const damagedCreeps = myCreeps.filter(c => c.hits < c.hitsMax);
     
     // Check if cleric itself is damaged - highest priority for healing
     const selfIsDamaged = creep.hits < creep.hitsMax;
@@ -147,17 +147,12 @@ export function act_cleric(creepInfo, controller, winObjective) {
     // === HEALING LOGIC ===
     // Priority 1: Heal self if damaged
     if (selfIsDamaged) {
-        const range = getRange(creep, creep);
-        if (range <= 1) {
-            creep.heal(creep);
-        } else {
-            creep.rangedHeal(creep);
-        }
+        creep.heal(creep);
     }
     // Priority 2: Heal other damaged allies in range
-    else if (damagedAllies.length > 0) {
-        const closestDamagedAlly = creep.findClosestByRange(damagedAllies);
-        if (closestDamagedAlly) {
+    else if (damagedCreeps.length > 0) {
+        const closestDamagedAlly = creep.findClosestByRange(damagedCreeps);
+        if (closestDamagedAlly && closestDamagedAlly.id !== creep.id) {
             const range = getRange(creep, closestDamagedAlly);
             
             // Healing is more effective at close range
@@ -218,7 +213,8 @@ export function act_cleric(creepInfo, controller, winObjective) {
             } 
             // No enemies in range - move towards target based on priority
             else {
-                // If there are injured allies (not in range), move to them first
+                // If there are injured allies (excluding self, not in range), move to them first
+                const damagedAllies = damagedCreeps.filter(c => c.id !== creep.id);
                 if (damagedAllies.length > 0) {
                     const closestDamagedAlly = creep.findClosestByRange(damagedAllies);
                     if (closestDamagedAlly && getRange(creep, closestDamagedAlly) > 1) {
@@ -233,12 +229,13 @@ export function act_cleric(creepInfo, controller, winObjective) {
         }
     } else {
         // No enemies at all - idle behavior
-        idle(creep, damagedAllies);
+        idle(creep, damagedCreeps);
     }
 }
 
-function idle(creep, damagedAllies) {
-    // If there are injured creeps, move to them
+function idle(creep, damagedCreeps) {
+    // If there are injured creeps (excluding self), move to them
+    const damagedAllies = damagedCreeps.filter(c => c.id !== creep.id);
     if (damagedAllies.length > 0) {
         const closestDamagedAlly = creep.findClosestByRange(damagedAllies);
         if (closestDamagedAlly) {
