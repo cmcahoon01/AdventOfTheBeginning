@@ -242,6 +242,10 @@ export function act_miner(creepInfo, controller, winObjective) {
                         const result = createConstructionSite(pos, StructureExtension);
                         if (result.object) {
                             created++;
+                            console.log("created a extension site at: " + result.object.x + ", " + result.object.y;
+                        } else {
+                            console.log("failed to create an extension site:");
+                            console.log(result);
                         }
                     }
                     
