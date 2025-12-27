@@ -53,7 +53,7 @@ export function act_fighter(creepInfo, controller, winObjective) {
         
         // Check if the enemy is reachable (i.e., can we get adjacent to them?)
         // An enemy is unreachable if they are completely surrounded by ramparts
-        if (isReachableForMelee(closestEnemyOnRampart, ramparts)) {
+        if (isReachableForMelee(closestEnemyOnRampart, rampartPositions)) {
             target = closestEnemyOnRampart;
         } else {
             // Enemy is unreachable, use idle action
@@ -77,10 +77,7 @@ export function act_fighter(creepInfo, controller, winObjective) {
 
 // Helper function to check if an enemy on a rampart is reachable for melee attack
 // An enemy is reachable if at least one adjacent tile is NOT occupied by a rampart
-function isReachableForMelee(enemy, ramparts) {
-    // Create a Set of rampart positions for O(1) lookup
-    const rampartPositions = new Set(ramparts.map(r => `${r.x},${r.y}`));
-    
+function isReachableForMelee(enemy, rampartPositions) {
     // Check all 8 adjacent positions around the enemy
     const adjacentPositions = [
         {x: enemy.x - 1, y: enemy.y - 1}, // top-left
