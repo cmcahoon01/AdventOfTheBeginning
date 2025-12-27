@@ -138,13 +138,13 @@ export function act_cleric(creepInfo, controller, winObjective) {
     // Find damaged allies (including self)
     const damagedAllies = myCreeps.filter(c => c.hits < c.hitsMax);
     
-    // Check if cleric itself is damaged - highest priority
+    // Check if cleric itself is damaged - highest priority for healing
     const selfIsDamaged = creep.hits < creep.hitsMax;
     
     // Determine if there are enemies in range
-    const enemiesInRange = allHostileCreeps.length > 0 && 
-                           allHostileCreeps.some(e => getRange(creep, e) <= DESIRED_RANGE);
+    const enemiesInRange = allHostileCreeps.filter(e => getRange(creep, e) <= 3);
     
+    // === HEALING LOGIC ===
     // Priority 1: Heal self if damaged
     if (selfIsDamaged) {
         const range = getRange(creep, creep);
@@ -160,23 +160,16 @@ export function act_cleric(creepInfo, controller, winObjective) {
         if (closestDamagedAlly) {
             const range = getRange(creep, closestDamagedAlly);
             
-            // Healing is more effective at close range, try to get adjacent
+            // Healing is more effective at close range
             if (range <= 1) {
                 creep.heal(closestDamagedAlly);
             } else if (range <= 3) {
                 creep.rangedHeal(closestDamagedAlly);
-                // If not adjacent and not at optimal range, move closer
-                if (range > 1) {
-                    creep.moveTo(closestDamagedAlly);
-                }
-            } else {
-                // Out of range, move closer
-                creep.moveTo(closestDamagedAlly);
             }
         }
     }
     
-    // Attack behavior (can be done simultaneously with healing)
+    // === ATTACK LOGIC ===
     if (allHostileCreeps.length > 0) {
         // Get all ramparts for targeting logic
         const ramparts = getObjectsByPrototype(StructureRampart);
@@ -214,22 +207,32 @@ export function act_cleric(creepInfo, controller, winObjective) {
                 creep.rangedAttack(closestEnemy);
             }
             
-            // Movement logic when enemies exist
-            // If no healing needed and enemies in range, kite
-            if (!selfIsDamaged && damagedAllies.length === 0 && range <= DESIRED_RANGE) {
+            // === MOVEMENT LOGIC WHEN ENEMIES EXIST ===
+            // If there are enemies in range, movement should be dedicated to kiting
+            if (enemiesInRange.length > 0) {
                 // Kite: move away from enemies
                 const retreatPos = findBestRetreatPosition(creep, allHostileCreeps, allCreeps, allStructures);
                 if (retreatPos) {
                     creep.moveTo(retreatPos);
                 }
-            } else if (!selfIsDamaged && damagedAllies.length === 0 && range > 3) {
-                // No healing needed and enemy is too far, move closer to attack
-                creep.moveTo(closestEnemy);
+            } 
+            // No enemies in range - move towards target based on priority
+            else {
+                // If there are injured allies (not in range), move to them first
+                if (damagedAllies.length > 0) {
+                    const closestDamagedAlly = creep.findClosestByRange(damagedAllies);
+                    if (closestDamagedAlly && getRange(creep, closestDamagedAlly) > 1) {
+                        creep.moveTo(closestDamagedAlly);
+                    }
+                }
+                // Otherwise move towards enemies to attack
+                else if (range > 3) {
+                    creep.moveTo(closestEnemy);
+                }
             }
-            // If healing is needed, movement is handled in healing logic above
         }
     } else {
-        // No enemies - idle behavior
+        // No enemies at all - idle behavior
         idle(creep, damagedAllies);
     }
 }
