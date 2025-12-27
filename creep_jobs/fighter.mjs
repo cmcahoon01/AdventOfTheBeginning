@@ -24,14 +24,15 @@ export function act_fighter(creepInfo, controller, winObjective) {
     // Get all ramparts
     const ramparts = getObjectsByPrototype(StructureRampart);
     
+    // Create a Set of rampart positions for O(1) lookup
+    const rampartPositions = new Set(ramparts.map(r => `${r.x},${r.y}`));
+    
     // Separate enemies into those on ramparts and those not on ramparts
     const enemiesNotOnRamparts = [];
     const enemiesOnRamparts = [];
     
     allHostileCreeps.forEach(enemy => {
-        const onRampart = ramparts.some(rampart => 
-            rampart.x === enemy.x && rampart.y === enemy.y
-        );
+        const onRampart = rampartPositions.has(`${enemy.x},${enemy.y}`);
         if (onRampart) {
             enemiesOnRamparts.push(enemy);
         } else {
@@ -77,6 +78,9 @@ export function act_fighter(creepInfo, controller, winObjective) {
 // Helper function to check if an enemy on a rampart is reachable for melee attack
 // An enemy is reachable if at least one adjacent tile is NOT occupied by a rampart
 function isReachableForMelee(enemy, ramparts) {
+    // Create a Set of rampart positions for O(1) lookup
+    const rampartPositions = new Set(ramparts.map(r => `${r.x},${r.y}`));
+    
     // Check all 8 adjacent positions around the enemy
     const adjacentPositions = [
         {x: enemy.x - 1, y: enemy.y - 1}, // top-left
@@ -91,7 +95,7 @@ function isReachableForMelee(enemy, ramparts) {
     
     // If at least one adjacent position doesn't have a rampart, the enemy is reachable
     return adjacentPositions.some(pos => {
-        return !ramparts.some(r => r.x === pos.x && r.y === pos.y);
+        return !rampartPositions.has(`${pos.x},${pos.y}`);
     });
 }
 

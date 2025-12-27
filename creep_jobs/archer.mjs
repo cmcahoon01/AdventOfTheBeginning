@@ -28,14 +28,15 @@ export function act_archer(creepInfo, controller, winObjective) {
     // Get all ramparts
     const ramparts = getObjectsByPrototype(StructureRampart);
     
+    // Create a Set of rampart positions for O(1) lookup
+    const rampartPositions = new Set(ramparts.map(r => `${r.x},${r.y}`));
+    
     // Separate enemies into those on ramparts and those not on ramparts
     const enemiesNotOnRamparts = [];
     const enemiesOnRamparts = [];
     
     allHostileCreeps.forEach(enemy => {
-        const onRampart = ramparts.some(rampart => 
-            rampart.x === enemy.x && rampart.y === enemy.y
-        );
+        const onRampart = rampartPositions.has(`${enemy.x},${enemy.y}`);
         if (onRampart) {
             enemiesOnRamparts.push(enemy);
         } else {
