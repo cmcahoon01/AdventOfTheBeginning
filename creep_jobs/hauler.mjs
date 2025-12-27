@@ -95,8 +95,7 @@ export function act_hauler(creepInfo, controller, winObjective) {
                 const roadConstructionSites = constructionSites.filter(site =>
                     site.structure instanceof StructureRoad);
                 const roadUnder = roadConstructionSites.find(site => 
-                        site.x === creep.x && 
-                        site.y === creep.y);
+                        Math.max(Math.abs(site.x-creep.x), Math.abs(site.y-creep.y)) <= 1);
                 if (roadUnder && creep.store[RESOURCE_ENERGY] >= 10){
                     creep.build(roadUnder);
                 }
