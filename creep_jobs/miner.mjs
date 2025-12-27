@@ -4,8 +4,8 @@ import { Source, StructureSpawn, StructureExtension, ConstructionSite } from 'ga
 import { createConstructionSite } from 'game';
 
 // Body configuration for miner creeps
-export const MINER_BODY = [WORK, WORK, WORK, WORK, CARRY];
-export const MINER_COST = 450; // 100 + 100 + 100 + 100 + 50
+export const MINER_BODY = [WORK, WORK, WORK, WORK, CARRY, MOVE];
+export const MINER_COST = 500; // 100 + 100 + 100 + 100 + 50 + 50
 
 // Number of extensions each miner should create and fill
 export const EXTENSIONS_PER_MINER = 1;
