@@ -1,6 +1,6 @@
 import { getObjectById, getObjectsByPrototype } from 'game/utils';
-import { TOUGH, ATTACK, MOVE, ERR_NOT_IN_RANGE } from 'game/constants';
-import { Creep } from 'game/prototypes';
+import { TOUGH, ATTACK, MOVE, ERR_NOT_IN_RANGE} from 'game/constants';
+import { Creep, StructureSpawn } from 'game/prototypes';
 
 // Body configuration for fighter creeps
 export const FIGHTER_BODY = [TOUGH, MOVE, MOVE, ATTACK, ATTACK];
