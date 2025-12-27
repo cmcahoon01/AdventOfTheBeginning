@@ -63,16 +63,40 @@ function idle(creep){
         const ramparts = getObjectsByPrototype(StructureRampart);
         
         if (ramparts.length > 0) {
-            // Find the closest rampart to the fighter to clear the path
-            const closestRampart = creep.findClosestByRange(ramparts);
+            // Find ramparts that are on the edge (don't have ramparts in all 8 adjacent positions)
+            const edgeRamparts = ramparts.filter(rampart => {
+                // Check all 8 adjacent positions
+                const adjacentPositions = [
+                    {x: rampart.x - 1, y: rampart.y - 1}, // top-left
+                    {x: rampart.x, y: rampart.y - 1},     // top
+                    {x: rampart.x + 1, y: rampart.y - 1}, // top-right
+                    {x: rampart.x - 1, y: rampart.y},     // left
+                    {x: rampart.x + 1, y: rampart.y},     // right
+                    {x: rampart.x - 1, y: rampart.y + 1}, // bottom-left
+                    {x: rampart.x, y: rampart.y + 1},     // bottom
+                    {x: rampart.x + 1, y: rampart.y + 1}  // bottom-right
+                ];
+                
+                // Check if at least one adjacent position doesn't have a rampart
+                const hasEmptyAdjacent = adjacentPositions.some(pos => {
+                    return !ramparts.some(r => r.x === pos.x && r.y === pos.y);
+                });
+                
+                return hasEmptyAdjacent;
+            });
             
-            if (closestRampart) {
-                const rampartAttackResult = creep.attack(closestRampart);
-                if (rampartAttackResult === ERR_NOT_IN_RANGE) {
-                    // Move towards the rampart to attack it
-                    creep.moveTo(closestRampart);
+            if (edgeRamparts.length > 0) {
+                // Find the edge rampart closest to the enemy spawn
+                const targetRampart = enemySpawn.findClosestByRange(edgeRamparts);
+                
+                if (targetRampart) {
+                    const rampartAttackResult = creep.attack(targetRampart);
+                    if (rampartAttackResult === ERR_NOT_IN_RANGE) {
+                        // Move towards the rampart to attack it
+                        creep.moveTo(targetRampart);
+                    }
+                    return;
                 }
-                return;
             }
         }
         
