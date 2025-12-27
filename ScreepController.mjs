@@ -3,6 +3,7 @@ import { act_fighter } from './creep_jobs/fighter.mjs';
 import { act_archer } from './creep_jobs/archer.mjs';
 import { act_hauler } from './creep_jobs/hauler.mjs';
 import { act_miner } from './creep_jobs/miner.mjs';
+import { act_cleric } from './creep_jobs/cleric.mjs';
 
 // Class to store information about a creep
 class CreepInfo {
@@ -22,7 +23,8 @@ export class ScreepController {
             fighter: act_fighter,
             archer: act_archer,
             hauler: act_hauler,
-            miner: act_miner
+            miner: act_miner,
+            cleric: act_cleric
         };
     }
 
