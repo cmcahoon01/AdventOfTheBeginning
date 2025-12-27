@@ -4,18 +4,11 @@ import { Creep, StructureSpawn, StructureRampart, Structure } from 'game/prototy
 
 // Body configuration for cleric creeps
 export const CLERIC_BODY = [MOVE, MOVE, RANGED_ATTACK, HEAL];
-export const CLERIC_COST = 450; // 50 + 50 + 150 + 250
+export const CLERIC_COST = 500; // 50 + 50 + 150 + 250
 
 // Kiting behavior constants
 const DESIRED_RANGE = 3;
 const ARENA_SIZE = 100; // Arena dimensions
-
-// Helper function to calculate Euclidean distance
-function euclideanDistance(pos1, pos2) {
-    const dx = pos1.x - pos2.x;
-    const dy = pos1.y - pos2.y;
-    return Math.sqrt(dx * dx + dy * dy);
-}
 
 // Get all valid adjacent positions that the creep can move to
 function getValidAdjacentPositions(creep, allCreeps, allStructures) {
@@ -83,7 +76,7 @@ function findBestRetreatPosition(creep, enemies, allCreeps, allStructures) {
     
     // Find the closest enemy to each position
     const positionsWithDistances = validPositions.map(pos => {
-        const minEnemyDistance = Math.min(...enemies.map(enemy => euclideanDistance(pos, enemy)));
+        const minEnemyDistance = Math.min(...enemies.map(enemy => getRange(pos, enemy)));
         return { pos, minEnemyDistance };
     });
     
@@ -104,10 +97,10 @@ function findBestRetreatPosition(creep, enemies, allCreeps, allStructures) {
     const mySpawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
     if (mySpawn) {
         let closestToSpawn = bestPositions[0];
-        let minSpawnDistance = euclideanDistance(closestToSpawn, mySpawn);
+        let minSpawnDistance = getRange(closestToSpawn, mySpawn);
         
         for (let i = 1; i < bestPositions.length; i++) {
-            const spawnDistance = euclideanDistance(bestPositions[i], mySpawn);
+            const spawnDistance = getRange(bestPositions[i], mySpawn);
             if (spawnDistance < minSpawnDistance) {
                 minSpawnDistance = spawnDistance;
                 closestToSpawn = bestPositions[i];
