@@ -7,6 +7,8 @@ import { createConstructionSite } from 'game';
 export const HAULER_BODY = [WORK, CARRY, MOVE, MOVE];
 export const HAULER_COST = 250; // 100 + 50 + 50 + 50
 
+const MAX_CONSTRUCTION = 3;
+
 // Helper function to check if a position has a road or road construction site
 function hasRoadOrConstructionSite(pos, roads, constructionSites) {
     // Check for existing roads
@@ -109,7 +111,7 @@ export function act_hauler(creepInfo, controller, winObjective) {
                     const constructionSites = getObjectsByPrototype(ConstructionSite);
                     
                     // Check if the next position has a road or construction site
-                    if (!hasRoadOrConstructionSite(nextPos, roads, constructionSites)) {
+                    if (!hasRoadOrConstructionSite(nextPos, roads, constructionSites) && constructionSites.length < 3) {
                         // Place a road construction site
                         createConstructionSite(nextPos, StructureRoad);
                     }
