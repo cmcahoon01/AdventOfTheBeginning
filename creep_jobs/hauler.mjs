@@ -109,7 +109,7 @@ export function act_hauler(creepInfo, controller, winObjective) {
                             site.x === nextPos.x && site.y === nextPos.y);
                         const siteThereAleady = roadConstructionSites.find(site =>
                             site.x === nextPos.x && site.y === nextPos.y);
-                        if (!roadThereAlready && !siteThereAleady && MAX_ROAD_CONSTRUCTION){
+                        if (!roadThereAlready && !siteThereAleady && roads.length < MAX_ROAD_CONSTRUCTION){
                             createConstructionSite(nextPos, StructureRoad);
                         }
                     }
