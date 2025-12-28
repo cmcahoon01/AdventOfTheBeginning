@@ -10,13 +10,13 @@ import { CLERIC_BODY, CLERIC_COST } from './creep_jobs/cleric.mjs';
 // Build order configuration
 // Each entry specifies the job type, body, and cost
 const BUILD_ORDER_TEMPLATE = [
-    //{ job: 'cleric', body: CLERIC_BODY, cost: CLERIC_COST },
+    { job: 'cleric', body: CLERIC_BODY, cost: CLERIC_COST },
     { job: 'hauler', body: HAULER_BODY, cost: HAULER_COST },
-    //{ job: 'fighter', body: FIGHTER_BODY, cost: FIGHTER_COST },
+    { job: 'fighter', body: FIGHTER_BODY, cost: FIGHTER_COST },
     { job: 'miner', body: MINER_BODY, cost: MINER_COST },
-    //{ job: 'fighter', body: FIGHTER_BODY, cost: FIGHTER_COST },
+    { job: 'fighter', body: FIGHTER_BODY, cost: FIGHTER_COST },
     { job: 'miner', body: MINER_BODY, cost: MINER_COST },
-    //{ job: 'archer', body: ARCHER_BODY, cost: ARCHER_COST }
+    { job: 'archer', body: ARCHER_BODY, cost: ARCHER_COST }
     // After position 5, haulers are built infinitely
 ];
 
