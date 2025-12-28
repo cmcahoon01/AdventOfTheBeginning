@@ -231,22 +231,31 @@ export function act_miner(creepInfo, controller, winObjective) {
                 
                 // Create construction sites if not already done
                 if (!creepInfo.memory.extensionsCreated) {
-                    const extensionPositions = getExtensionPositions(creep, source);
+                    // const extensionPositions = getExtensionPositions(creep, source);
                     
-                    // Create construction sites (limit to EXTENSIONS_PER_MINER)
-                    let created = 0;
-                    for (const pos of extensionPositions) {
-                        if (created >= EXTENSIONS_PER_MINER) break;
-                        if (getTerrainAt(pos) == TERRAIN_WALL) continue;
+                    // // Create construction sites (limit to EXTENSIONS_PER_MINER)
+                    // let created = 0;
+                    // for (const pos of extensionPositions) {
+                    //     if (created >= EXTENSIONS_PER_MINER) break;
+                    //     if (getTerrainAt(pos) == TERRAIN_WALL) continue;
                         
-                        const result = createConstructionSite(pos, StructureExtension);
-                        if (result.object) {
-                            created++;
-                            console.log("created a extension site at: " + result.object.x + ", " + result.object.y);
-                        } else {
-                            console.log("failed to create an extension site:");
-                            console.log(result);
-                        }
+                    //     const result = createConstructionSite(pos, StructureExtension);
+                    //     if (result.object) {
+                    //         created++;
+                    //         console.log("created a extension site at: " + result.object.x + ", " + result.object.y);
+                    //     } else {
+                    //         console.log("failed to create an extension site:");
+                    //         console.log(result);
+                    //     }
+                    // }
+
+                    const extensionPosition = {x: creep.x, y: creep.y}
+                    const result = createConstructionSite(pos, StructureExtension);
+                    if (result.object) {
+                        console.log("created a extension site at: " + result.object.x + ", " + result.object.y);
+                    } else {
+                        console.log("failed to create an extension site:");
+                        console.log(result);
                     }
                     
                     creepInfo.memory.extensionsCreated = true;
