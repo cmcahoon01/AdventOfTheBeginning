@@ -1,22 +1,18 @@
 import { getObjectsByPrototype } from 'game/utils';
 import { StructureSpawn, StructureExtension } from 'game/prototypes';
 import { RESOURCE_ENERGY } from 'game/constants';
-import { FIGHTER_BODY, FIGHTER_COST } from './creep_jobs/fighter.mjs';
-import { ARCHER_BODY, ARCHER_COST } from './creep_jobs/archer.mjs';
-import { HAULER_BODY, HAULER_COST } from './creep_jobs/hauler.mjs';
-import { MINER_BODY, MINER_COST } from './creep_jobs/miner.mjs';
-import { CLERIC_BODY, CLERIC_COST } from './creep_jobs/cleric.mjs';
+import { Jobs } from './creep_jobs/JobRegistry.mjs';
 
 // Build order configuration
-// Each entry specifies the job type, body, and cost
+// Each entry specifies the job type
 const BUILD_ORDER_TEMPLATE = [
-    { job: 'cleric', body: CLERIC_BODY, cost: CLERIC_COST },
-    { job: 'hauler', body: HAULER_BODY, cost: HAULER_COST },
-    { job: 'fighter', body: FIGHTER_BODY, cost: FIGHTER_COST },
-    { job: 'miner', body: MINER_BODY, cost: MINER_COST },
-    { job: 'fighter', body: FIGHTER_BODY, cost: FIGHTER_COST },
-    { job: 'miner', body: MINER_BODY, cost: MINER_COST },
-    { job: 'archer', body: ARCHER_BODY, cost: ARCHER_COST }
+    { jobName: 'cleric' },
+    { jobName: 'hauler' },
+    { jobName: 'fighter' },
+    { jobName: 'miner' },
+    { jobName: 'fighter' },
+    { jobName: 'miner' },
+    { jobName: 'archer' }
     // After position 5, haulers are built infinitely
 ];
 
@@ -71,23 +67,39 @@ export class BuildOrder {
         // Check each position in the build order template
         for (let i = 0; i < this.buildOrderTemplate.length; i++) {
             const template = this.buildOrderTemplate[i];
+            const jobName = template.jobName;
+            const jobClass = Jobs[jobName];
+            
+            if (!jobClass) {
+                console.log(`Warning: Unknown job type '${jobName}' in build order`);
+                continue;
+            }
             
             // Count how many of this job should exist up to and including this position
             let expectedCount = 0;
             for (let j = 0; j <= i; j++) {
-                if (this.buildOrderTemplate[j].job === template.job) {
+                if (this.buildOrderTemplate[j].jobName === jobName) {
                     expectedCount++;
                 }
             }
 
             // If we don't have enough of this job type, build it
-            if (creepCounts[template.job] < expectedCount) {
-                return template;
+            if (creepCounts[jobName] < expectedCount) {
+                return { 
+                    job: jobName, 
+                    body: jobClass.BODY, 
+                    cost: jobClass.COST 
+                };
             }
         }
 
         // After completing the initial build order, build haulers infinitely
-        return { job: 'hauler', body: HAULER_BODY, cost: HAULER_COST };
+        const haulerClass = Jobs['hauler'];
+        return { 
+            job: 'hauler', 
+            body: haulerClass.BODY, 
+            cost: haulerClass.COST 
+        };
     }
 
     // Check if there's a spawning creep that hasn't been added to memory yet
