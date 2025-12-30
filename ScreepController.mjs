@@ -1,9 +1,5 @@
 import { getObjectById } from 'game/utils';
-import { act_fighter } from './creep_jobs/fighter.mjs';
-import { act_archer } from './creep_jobs/archer.mjs';
-import { act_hauler } from './creep_jobs/hauler.mjs';
-import { act_miner } from './creep_jobs/miner.mjs';
-import { act_cleric } from './creep_jobs/cleric.mjs';
+import { JOB_REGISTRY } from './creep_jobs/JobRegistry.mjs';
 
 // Class to store information about a creep
 class CreepInfo {
@@ -18,19 +14,11 @@ class CreepInfo {
 export class ScreepController {
     constructor() {
         this.creeps = [];
-        // Map job names to their action functions
-        this.jobActions = {
-            fighter: act_fighter,
-            archer: act_archer,
-            hauler: act_hauler,
-            miner: act_miner,
-            cleric: act_cleric
-        };
     }
 
     // Add a new creep to the controller
     addCreep(id, job) {
-        if (!this.jobActions[job]) {
+        if (!JOB_REGISTRY[job]) {
             console.log(`Warning: Unknown job type '${job}'`);
             return;
         }
@@ -54,9 +42,9 @@ export class ScreepController {
             // Creep is alive, call its action function
             // Skip if creep is still spawning
             if (!creep.spawning) {
-                const actionFn = this.jobActions[creepInfo.job];
-                if (actionFn) {
-                    actionFn(creepInfo, this, winObjective);
+                const jobInstance = JOB_REGISTRY[creepInfo.job];
+                if (jobInstance) {
+                    jobInstance.act(creepInfo, this, winObjective);
                 }
             }
             
