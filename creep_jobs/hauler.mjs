@@ -118,9 +118,9 @@ export class HaulerJob extends Job {
                             const roads =  getObjectsByPrototype(StructureRoad);
                             const roadThereAlready = roads.find(site => 
                                 site.x === nextPos.x && site.y === nextPos.y);
-                            const siteThereAleady = roadConstructionSites.find(site =>
+                            const siteThereAlready = roadConstructionSites.find(site =>
                                 site.x === nextPos.x && site.y === nextPos.y);
-                            if (!roadThereAlready && !siteThereAleady && roads.length < MAX_ROAD_CONSTRUCTION){
+                            if (!roadThereAlready && !siteThereAlready && roads.length < MAX_ROAD_CONSTRUCTION){
                                 createConstructionSite(nextPos, StructureRoad);
                             }
                         }
