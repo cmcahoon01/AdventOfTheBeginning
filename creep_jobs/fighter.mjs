@@ -116,13 +116,3 @@ export class FighterJob extends Job {
         }
     }
 }
-
-// Export singleton instance and constants for backwards compatibility
-export const fighterJob = new FighterJob();
-export const FIGHTER_BODY = FighterJob.BODY;
-export const FIGHTER_COST = FighterJob.COST;
-
-// Backwards compatibility for act_fighter function
-export function act_fighter(creepInfo, controller, winObjective) {
-    fighterJob.act(creepInfo, controller, winObjective);
-}

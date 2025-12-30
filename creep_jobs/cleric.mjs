@@ -44,13 +44,3 @@ export class ClericJob extends RangedJob {
         }
     }
 }
-
-// Export singleton instance and constants for backwards compatibility
-export const clericJob = new ClericJob();
-export const CLERIC_BODY = ClericJob.BODY;
-export const CLERIC_COST = ClericJob.COST;
-
-// Backwards compatibility for act_cleric function
-export function act_cleric(creepInfo, controller, winObjective) {
-    clericJob.act(creepInfo, controller, winObjective);
-}

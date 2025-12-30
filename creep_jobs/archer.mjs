@@ -20,13 +20,3 @@ export class ArcherJob extends RangedJob {
         return false;
     }
 }
-
-// Export singleton instance and constants for backwards compatibility
-export const archerJob = new ArcherJob();
-export const ARCHER_BODY = ArcherJob.BODY;
-export const ARCHER_COST = ArcherJob.COST;
-
-// Backwards compatibility for act_archer function
-export function act_archer(creepInfo, controller, winObjective) {
-    archerJob.act(creepInfo, controller, winObjective);
-}

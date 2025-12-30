@@ -343,13 +343,3 @@ export class MinerJob extends Job {
         }
     }
 }
-
-// Export singleton instance and constants for backwards compatibility
-export const minerJob = new MinerJob();
-export const MINER_BODY = MinerJob.BODY;
-export const MINER_COST = MinerJob.COST;
-
-// Backwards compatibility for act_miner function
-export function act_miner(creepInfo, controller, winObjective) {
-    minerJob.act(creepInfo, controller, winObjective);
-}

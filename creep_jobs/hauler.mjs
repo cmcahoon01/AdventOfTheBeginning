@@ -153,13 +153,3 @@ export class HaulerJob extends Job {
         }
     }
 }
-
-// Export singleton instance and constants for backwards compatibility
-export const haulerJob = new HaulerJob();
-export const HAULER_BODY = HaulerJob.BODY;
-export const HAULER_COST = HaulerJob.COST;
-
-// Backwards compatibility for act_hauler function
-export function act_hauler(creepInfo, controller, winObjective) {
-    haulerJob.act(creepInfo, controller, winObjective);
-}
