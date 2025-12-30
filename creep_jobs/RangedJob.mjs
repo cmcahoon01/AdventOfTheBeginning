@@ -1,5 +1,5 @@
 import { getObjectById, getObjectsByPrototype, getRange, getTerrainAt } from 'game/utils';
-import { TERRAIN_WALL } from 'game/constants';
+import { TERRAIN_WALL, TERRAIN_SWAMP } from 'game/constants';
 import { Creep, StructureSpawn, StructureRampart, Structure } from 'game/prototypes';
 import { Job } from './Job.mjs';
 
@@ -90,7 +90,7 @@ export class RangedJob extends Job {
         const maxDistance = Math.max(...positionsWithDistances.map(p => p.minEnemyDistance));
         
         // Filter positions that have maximum distance from enemies
-        const bestPositions = positionsWithDistances
+        let bestPositions = positionsWithDistances
             .filter(p => p.minEnemyDistance === maxDistance)
             .map(p => p.pos);
         
@@ -99,25 +99,42 @@ export class RangedJob extends Job {
             return bestPositions[0];
         }
         
-        // If multiple positions, pick the one closest to our spawn
-        const mySpawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
-        if (mySpawn) {
-            let closestToSpawn = bestPositions[0];
-            let minSpawnDistance = getRange(closestToSpawn, mySpawn);
-            
-            for (let i = 1; i < bestPositions.length; i++) {
-                const spawnDistance = getRange(bestPositions[i], mySpawn);
-                if (spawnDistance < minSpawnDistance) {
-                    minSpawnDistance = spawnDistance;
-                    closestToSpawn = bestPositions[i];
-                }
-            }
-            
-            return closestToSpawn;
+        // If there are ties, avoid stepping on swamp tiles
+        const nonSwampPositions = bestPositions.filter(pos => {
+            const terrain = getTerrainAt(pos);
+            return terrain !== TERRAIN_SWAMP;
+        });
+        
+        // Use non-swamp positions if available, otherwise use all best positions
+        if (nonSwampPositions.length > 0) {
+            bestPositions = nonSwampPositions;
         }
         
-        // Fallback: return the first position
-        return bestPositions[0];
+        // If only one position after swamp filtering, return it
+        if (bestPositions.length === 1) {
+            return bestPositions[0];
+        }
+        
+        // If there are still ties, use the furthest Euclidean distance
+        let furthestPosition = bestPositions[0];
+        let maxEuclideanDistance = Math.sqrt(
+            Math.pow(furthestPosition.x - creep.x, 2) + 
+            Math.pow(furthestPosition.y - creep.y, 2)
+        );
+        
+        for (let i = 1; i < bestPositions.length; i++) {
+            const euclideanDistance = Math.sqrt(
+                Math.pow(bestPositions[i].x - creep.x, 2) + 
+                Math.pow(bestPositions[i].y - creep.y, 2)
+            );
+            
+            if (euclideanDistance > maxEuclideanDistance) {
+                maxEuclideanDistance = euclideanDistance;
+                furthestPosition = bestPositions[i];
+            }
+        }
+        
+        return furthestPosition;
     }
 
     // Idle behavior - move towards enemy spawn
