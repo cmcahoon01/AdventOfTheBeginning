@@ -67,6 +67,22 @@ export class RangedJob extends Job {
         return validPositions;
     }
 
+    // Find the nearest enemy to a position
+    findNearestEnemy(position, enemies) {
+        let nearestEnemy = enemies[0];
+        let minRange = getRange(position, nearestEnemy);
+        
+        for (let i = 1; i < enemies.length; i++) {
+            const range = getRange(position, enemies[i]);
+            if (range < minRange) {
+                minRange = range;
+                nearestEnemy = enemies[i];
+            }
+        }
+        
+        return nearestEnemy;
+    }
+
     // Find the best retreat position from enemies
     findBestRetreatPosition(creep, enemies, allCreeps, allStructures) {
         // Guard against empty enemies array
@@ -117,35 +133,13 @@ export class RangedJob extends Job {
         
         // If there are still ties, use the furthest Euclidean distance from nearest enemy
         let furthestPosition = bestPositions[0];
-        
-        // Find the nearest enemy for the first position
-        let closestEnemy = enemies[0];
-        let minEnemyRange = getRange(furthestPosition, closestEnemy);
-        for (const enemy of enemies) {
-            const range = getRange(furthestPosition, enemy);
-            if (range < minEnemyRange) {
-                minEnemyRange = range;
-                closestEnemy = enemy;
-            }
-        }
-        
+        let closestEnemy = this.findNearestEnemy(furthestPosition, enemies);
         let maxSquaredDistance = (furthestPosition.x - closestEnemy.x) ** 2 + 
                                  (furthestPosition.y - closestEnemy.y) ** 2;
         
         for (let i = 1; i < bestPositions.length; i++) {
             const pos = bestPositions[i];
-            
-            // Find the nearest enemy to this position
-            let nearestEnemy = enemies[0];
-            let minRange = getRange(pos, nearestEnemy);
-            for (const enemy of enemies) {
-                const range = getRange(pos, enemy);
-                if (range < minRange) {
-                    minRange = range;
-                    nearestEnemy = enemy;
-                }
-            }
-            
+            const nearestEnemy = this.findNearestEnemy(pos, enemies);
             const squaredDistance = (pos.x - nearestEnemy.x) ** 2 + 
                                     (pos.y - nearestEnemy.y) ** 2;
             
