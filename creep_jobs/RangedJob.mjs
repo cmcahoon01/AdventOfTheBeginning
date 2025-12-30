@@ -115,21 +115,17 @@ export class RangedJob extends Job {
             return bestPositions[0];
         }
         
-        // If there are still ties, use the furthest Euclidean distance
+        // If there are still ties, use the furthest Euclidean distance (squared for efficiency)
         let furthestPosition = bestPositions[0];
-        let maxEuclideanDistance = Math.sqrt(
-            Math.pow(furthestPosition.x - creep.x, 2) + 
-            Math.pow(furthestPosition.y - creep.y, 2)
-        );
+        let maxSquaredDistance = Math.pow(furthestPosition.x - creep.x, 2) + 
+                                 Math.pow(furthestPosition.y - creep.y, 2);
         
         for (let i = 1; i < bestPositions.length; i++) {
-            const euclideanDistance = Math.sqrt(
-                Math.pow(bestPositions[i].x - creep.x, 2) + 
-                Math.pow(bestPositions[i].y - creep.y, 2)
-            );
+            const squaredDistance = Math.pow(bestPositions[i].x - creep.x, 2) + 
+                                    Math.pow(bestPositions[i].y - creep.y, 2);
             
-            if (euclideanDistance > maxEuclideanDistance) {
-                maxEuclideanDistance = euclideanDistance;
+            if (squaredDistance > maxSquaredDistance) {
+                maxSquaredDistance = squaredDistance;
                 furthestPosition = bestPositions[i];
             }
         }
