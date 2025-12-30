@@ -1,5 +1,5 @@
 // Export all job classes and utilities
-export { Job } from './Job.mjs';
+export { ActiveCreep } from './ActiveCreep.mjs';
 export { RangedJob } from './RangedJob.mjs';
 export { FighterJob } from './fighter.mjs';
 export { ArcherJob } from './archer.mjs';

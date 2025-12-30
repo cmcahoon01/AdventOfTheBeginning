@@ -1,14 +1,14 @@
 import { getObjectById, getObjectsByPrototype, getRange, getTerrainAt } from 'game/utils';
 import { TERRAIN_WALL, TERRAIN_SWAMP } from 'game/constants';
 import { Creep, StructureSpawn, StructureRampart, Structure } from 'game/prototypes';
-import { Job } from './Job.mjs';
+import { ActiveCreep } from './ActiveCreep.mjs';
 
 // Kiting behavior constants
 const DESIRED_RANGE = 3;
 const ARENA_SIZE = 100; // Arena dimensions
 
 // Base class for ranged combat units (archer and cleric)
-export class RangedJob extends Job {
+export class RangedJob extends ActiveCreep {
     constructor() {
         super();
         if (new.target === RangedJob) {
@@ -190,8 +190,8 @@ export class RangedJob extends Job {
         // Default: no healing
     }
 
-    act(creepInfo, controller, winObjective) {
-        const creep = getObjectById(creepInfo.id);
+    act(controller, winObjective) {
+        const creep = getObjectById(this.id);
         if (!creep) {
             return;
         }

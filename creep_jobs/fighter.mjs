@@ -1,10 +1,10 @@
 import { getObjectById, getObjectsByPrototype } from 'game/utils';
 import { ATTACK, MOVE, ERR_NOT_IN_RANGE} from 'game/constants';
 import { Creep, StructureSpawn, StructureRampart } from 'game/prototypes';
-import { Job } from './Job.mjs';
+import { ActiveCreep } from './ActiveCreep.mjs';
 
 // Fighter job - melee combat
-export class FighterJob extends Job {
+export class FighterJob extends ActiveCreep {
     static get BODY() {
         return [MOVE, ATTACK];
     }
@@ -17,8 +17,8 @@ export class FighterJob extends Job {
         return 'fighter';
     }
 
-    act(creepInfo, controller, winObjective) {
-        const creep = getObjectById(creepInfo.id);
+    act(controller, winObjective) {
+        const creep = getObjectById(this.id);
         if (!creep) {
             return;
         }

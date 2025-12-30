@@ -58,9 +58,9 @@ export class BuildOrder {
             cleric: 0
         };
 
-        for (const creepInfo of creeps) {
-            if (creepCounts[creepInfo.job] !== undefined) {
-                creepCounts[creepInfo.job]++;
+        for (const activeCreep of creeps) {
+            if (creepCounts[activeCreep.jobName] !== undefined) {
+                creepCounts[activeCreep.jobName]++;
             }
         }
 
