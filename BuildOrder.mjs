@@ -68,9 +68,9 @@ export class BuildOrder {
         for (let i = 0; i < this.buildOrderTemplate.length; i++) {
             const template = this.buildOrderTemplate[i];
             const jobName = template.jobName;
-            const jobClass = JOB_REGISTRY[jobName];
+            const jobInstance = JOB_REGISTRY[jobName];
             
-            if (!jobClass) {
+            if (!jobInstance) {
                 console.log(`Warning: Unknown job type '${jobName}' in build order`);
                 continue;
             }
@@ -87,18 +87,18 @@ export class BuildOrder {
             if (creepCounts[jobName] < expectedCount) {
                 return { 
                     job: jobName, 
-                    body: jobClass.constructor.BODY, 
-                    cost: jobClass.constructor.COST 
+                    body: jobInstance.constructor.BODY, 
+                    cost: jobInstance.constructor.COST 
                 };
             }
         }
 
         // After completing the initial build order, build haulers infinitely
-        const haulerJob = JOB_REGISTRY['hauler'];
+        const haulerInstance = JOB_REGISTRY['hauler'];
         return { 
             job: 'hauler', 
-            body: haulerJob.constructor.BODY, 
-            cost: haulerJob.constructor.COST 
+            body: haulerInstance.constructor.BODY, 
+            cost: haulerInstance.constructor.COST 
         };
     }
 
