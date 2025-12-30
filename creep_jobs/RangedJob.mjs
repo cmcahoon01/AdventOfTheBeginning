@@ -115,18 +115,43 @@ export class RangedJob extends Job {
             return bestPositions[0];
         }
         
-        // If there are still ties, use the furthest Euclidean distance (squared for efficiency)
+        // If there are still ties, use the furthest Euclidean distance from nearest enemy
         let furthestPosition = bestPositions[0];
-        let maxSquaredDistance = (furthestPosition.x - creep.x) ** 2 + 
-                                 (furthestPosition.y - creep.y) ** 2;
+        
+        // Find the nearest enemy for the first position
+        let closestEnemy = enemies[0];
+        let minEnemyRange = getRange(furthestPosition, closestEnemy);
+        for (const enemy of enemies) {
+            const range = getRange(furthestPosition, enemy);
+            if (range < minEnemyRange) {
+                minEnemyRange = range;
+                closestEnemy = enemy;
+            }
+        }
+        
+        let maxSquaredDistance = (furthestPosition.x - closestEnemy.x) ** 2 + 
+                                 (furthestPosition.y - closestEnemy.y) ** 2;
         
         for (let i = 1; i < bestPositions.length; i++) {
-            const squaredDistance = (bestPositions[i].x - creep.x) ** 2 + 
-                                    (bestPositions[i].y - creep.y) ** 2;
+            const pos = bestPositions[i];
+            
+            // Find the nearest enemy to this position
+            let nearestEnemy = enemies[0];
+            let minRange = getRange(pos, nearestEnemy);
+            for (const enemy of enemies) {
+                const range = getRange(pos, enemy);
+                if (range < minRange) {
+                    minRange = range;
+                    nearestEnemy = enemy;
+                }
+            }
+            
+            const squaredDistance = (pos.x - nearestEnemy.x) ** 2 + 
+                                    (pos.y - nearestEnemy.y) ** 2;
             
             if (squaredDistance > maxSquaredDistance) {
                 maxSquaredDistance = squaredDistance;
-                furthestPosition = bestPositions[i];
+                furthestPosition = pos;
             }
         }
         
