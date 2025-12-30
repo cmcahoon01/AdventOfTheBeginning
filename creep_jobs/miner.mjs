@@ -5,7 +5,7 @@ import { createConstructionSite } from 'game';
 import { Job } from './Job.mjs';
 
 // Number of extensions each miner should create and fill
-export const EXTENSIONS_PER_MINER = 1;
+export const EXTENSIONS_PER_MINER = 3;
 
 // Miner job - dedicated resource extraction and extension building
 export class MinerJob extends Job {
