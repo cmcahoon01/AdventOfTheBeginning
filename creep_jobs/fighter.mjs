@@ -4,7 +4,7 @@ import { Creep, StructureSpawn, StructureRampart } from 'game/prototypes';
 import { Job } from './Job.mjs';
 
 // Fighter job - melee combat
-class FighterJob extends Job {
+export class FighterJob extends Job {
     static get BODY() {
         return [MOVE, ATTACK];
     }

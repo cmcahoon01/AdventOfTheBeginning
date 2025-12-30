@@ -8,7 +8,7 @@ import { Job } from './Job.mjs';
 export const EXTENSIONS_PER_MINER = 1;
 
 // Miner job - dedicated resource extraction and extension building
-class MinerJob extends Job {
+export class MinerJob extends Job {
     static get BODY() {
         return [WORK, WORK, WORK, WORK, CARRY, MOVE];
     }

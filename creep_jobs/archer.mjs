@@ -2,7 +2,7 @@ import { RANGED_ATTACK, MOVE } from 'game/constants';
 import { RangedJob } from './RangedJob.mjs';
 
 // Archer job - ranged combat without healing (behaves like cleric without healing)
-class ArcherJob extends RangedJob {
+export class ArcherJob extends RangedJob {
     static get BODY() {
         return [MOVE, RANGED_ATTACK];
     }

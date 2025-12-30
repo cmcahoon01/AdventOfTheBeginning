@@ -3,7 +3,7 @@ import { RANGED_ATTACK, HEAL, MOVE } from 'game/constants';
 import { RangedJob } from './RangedJob.mjs';
 
 // Cleric job - ranged combat with healing abilities
-class ClericJob extends RangedJob {
+export class ClericJob extends RangedJob {
     static get BODY() {
         return [MOVE, MOVE, RANGED_ATTACK, HEAL];
     }

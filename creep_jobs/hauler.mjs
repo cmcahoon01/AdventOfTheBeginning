@@ -7,7 +7,7 @@ import { Job } from './Job.mjs';
 const MAX_ROAD_CONSTRUCTION = 6;
 
 // Hauler job - resource gathering and construction
-class HaulerJob extends Job {
+export class HaulerJob extends Job {
     static get BODY() {
         return [WORK, CARRY, MOVE, MOVE];
     }

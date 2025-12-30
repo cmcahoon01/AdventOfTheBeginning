@@ -1,7 +1,7 @@
 import { getObjectsByPrototype } from 'game/utils';
 import { StructureSpawn, StructureExtension } from 'game/prototypes';
 import { RESOURCE_ENERGY } from 'game/constants';
-import { JOB_REGISTRY } from './creep_jobs/JobRegistry.mjs';
+import { JOB_REGISTRY, JOB_CLASSES } from './creep_jobs/JobRegistry.mjs';
 
 // Build order configuration
 // Each entry specifies the job type
@@ -68,9 +68,9 @@ export class BuildOrder {
         for (let i = 0; i < this.buildOrderTemplate.length; i++) {
             const template = this.buildOrderTemplate[i];
             const jobName = template.jobName;
-            const jobInstance = JOB_REGISTRY[jobName];
+            const jobClass = JOB_CLASSES[jobName];
             
-            if (!jobInstance) {
+            if (!jobClass) {
                 console.log(`Warning: Unknown job type '${jobName}' in build order`);
                 continue;
             }
@@ -87,18 +87,18 @@ export class BuildOrder {
             if (creepCounts[jobName] < expectedCount) {
                 return { 
                     job: jobName, 
-                    body: jobInstance.constructor.BODY, 
-                    cost: jobInstance.constructor.COST 
+                    body: jobClass.BODY, 
+                    cost: jobClass.COST 
                 };
             }
         }
 
         // After completing the initial build order, build haulers infinitely
-        const haulerInstance = JOB_REGISTRY['hauler'];
+        const haulerClass = JOB_CLASSES['hauler'];
         return { 
             job: 'hauler', 
-            body: haulerInstance.constructor.BODY, 
-            cost: haulerInstance.constructor.COST 
+            body: haulerClass.BODY, 
+            cost: haulerClass.COST 
         };
     }
 
