@@ -242,11 +242,17 @@ export class RangedJob extends Job {
                         // Otherwise move towards enemies to attack
                         else if (range > 3) {
                             creep.moveTo(closestEnemy);
+                            if (range == 4) {
+                                creep.rangedAttack(closestEnemy);
+                            }
                         }
                     } else {
                         // Non-healing units just move towards enemies
                         if (range > 3) {
                             creep.moveTo(closestEnemy);
+                            if (range == 4) {
+                                creep.rangedAttack(closestEnemy);
+                            }
                         }
                     }
                 }
