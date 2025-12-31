@@ -4,6 +4,7 @@ import { ActiveCreep } from './ActiveCreep.mjs';
 import { KitingBehavior } from '../combat/KitingBehavior.mjs';
 import { isInRangedAttackRange, RANGED_ATTACK_RANGE } from '../utils/RangeUtils.mjs';
 import { CombatUtils } from '../utils/CombatUtils.mjs';
+import { MapTopology } from '../constants.mjs';
 
 // Kiting behavior constants
 const DESIRED_RANGE = 3;
@@ -32,7 +33,7 @@ export class RangedJob extends ActiveCreep {
         return KitingBehavior.findBestRetreatPosition(creep, enemies, allCreeps, allStructures);
     }
 
-    // Idle behavior - move towards enemy spawn
+    // Idle behavior - move towards center or stay defensive
     idle(creep, damagedCreeps) {
         // Subclasses can optionally check for injured allies first
         if (this.shouldHealDuringIdle() && damagedCreeps) {
@@ -48,14 +49,27 @@ export class RangedJob extends ActiveCreep {
         
         const enemySpawn = this.gameState.getEnemySpawn();
         if (enemySpawn) {
-            const range = getRange(creep, enemySpawn);
-            
-            // Attack the enemy spawn if in range
-            if (isInRangedAttackRange(creep, enemySpawn)) {
-                creep.rangedAttack(enemySpawn);
+            // Check if we're in enemy's third of the map - if so, move out
+            if (CombatUtils.isInEnemyThird(creep, enemySpawn)) {
+                // Move towards our spawn (away from enemy third)
+                const mySpawn = this.gameState.getMySpawn();
+                if (mySpawn) {
+                    creep.moveTo(mySpawn);
+                }
             } else {
-                // Move closer if not in range
-                creep.moveTo(enemySpawn);
+                // Idle in the center 2/3rds of the map
+                // Stay roughly where we are or move towards center line
+                const mapSize = MapTopology.ARENA_SIZE;
+                const centerPos = {
+                    x: mapSize / 2,
+                    y: mapSize / 2
+                };
+                
+                // Only move if we're far from center (to avoid constant movement)
+                const distToCenter = Math.abs(creep.x - centerPos.x) + Math.abs(creep.y - centerPos.y);
+                if (distToCenter > mapSize / 4) {
+                    creep.moveTo(centerPos);
+                }
             }
         }
     }
@@ -93,7 +107,21 @@ export class RangedJob extends ActiveCreep {
         // === HEALING LOGIC (if applicable) ===
         this.performHealing(creep, damagedCreeps, allCreeps);
         
-        // === ATTACK LOGIC ===
+        // === DEFENSIVE POSTURING CHECK ===
+        const inDefensiveMode = CombatUtils.handleDefensiveRetreat(creep, this.gameState);
+        
+        if (inDefensiveMode) {
+            // Still attack enemies if they're in range (even while on ramparts)
+            if (allHostileCreeps.length > 0) {
+                const closestEnemy = creep.findClosestByRange(allHostileCreeps);
+                if (closestEnemy && isInRangedAttackRange(creep, closestEnemy)) {
+                    creep.rangedAttack(closestEnemy);
+                }
+            }
+            return;
+        }
+        
+        // === ATTACK LOGIC (when not in defensive mode) ===
         if (allHostileCreeps.length > 0) {
             // Get all ramparts for targeting logic
             const ramparts = this.gameState.getRamparts();
@@ -104,59 +132,49 @@ export class RangedJob extends ActiveCreep {
                 ramparts
             );
             
-            let closestEnemy = null;
-            
-            // First priority: Target enemies NOT on ramparts
+            // Only target enemies if there are valid targets (not all on ramparts)
             if (enemiesNotOnRamparts.length > 0) {
-                closestEnemy = creep.findClosestByRange(enemiesNotOnRamparts);
-            } 
-            // Second priority: If all enemies are on ramparts, ranged units can still shoot them
-            else if (enemiesOnRamparts.length > 0) {
-                closestEnemy = creep.findClosestByRange(enemiesOnRamparts);
-            }
-            
-            if (closestEnemy) {
-                const range = getRange(creep, closestEnemy);
+                const closestEnemy = creep.findClosestByRange(enemiesNotOnRamparts);
                 
-                // If enemy is in attack range, attack
-                // if (range <= DESIRED_RANGE) {
-                //     creep.rangedAttack(closestEnemy);
-                // }
-                
-                // === MOVEMENT LOGIC WHEN ENEMIES EXIST ===
-                // If there are enemies in range, movement should be dedicated to kiting
-                if (enemiesInRange.length > 0 && range < DESIRED_RANGE) {
-                    // Kite: move away from enemies
-                    const retreatPos = this.findBestRetreatPosition(creep, allHostileCreeps, allCreeps, allStructures);
-                    if (retreatPos) {
-                        creep.moveTo(retreatPos);
+                if (closestEnemy) {
+                    const range = getRange(creep, closestEnemy);
+                    
+                    // === MOVEMENT LOGIC WHEN ENEMIES EXIST ===
+                    // If there are enemies in range, movement should be dedicated to kiting
+                    if (enemiesInRange.length > 0 && range < DESIRED_RANGE) {
+                        // Kite: move away from enemies
+                        const retreatPos = this.findBestRetreatPosition(creep, allHostileCreeps, allCreeps, allStructures);
+                        if (retreatPos) {
+                            creep.moveTo(retreatPos);
+                        }
                     }
-                }
-                // No enemies in range - move towards target based on priority
-                else {
-                    // If there are injured allies (excluding self, not in range), move to them first
-                    if (this.shouldHealDuringIdle()) {
-                        const damagedAllies = damagedCreeps.filter(c => c.id !== creep.id);
-                        if (damagedAllies.length > 0) {
-                            const closestDamagedAlly = creep.findClosestByRange(damagedAllies);
-                            if (closestDamagedAlly && getRange(creep, closestDamagedAlly) > 1) {
-                                creep.moveTo(closestDamagedAlly);
+                    // No enemies in range - move towards target based on priority
+                    else {
+                        // If there are injured allies (excluding self, not in range), move to them first
+                        if (this.shouldHealDuringIdle()) {
+                            const damagedAllies = damagedCreeps.filter(c => c.id !== creep.id);
+                            if (damagedAllies.length > 0) {
+                                const closestDamagedAlly = creep.findClosestByRange(damagedAllies);
+                                if (closestDamagedAlly && getRange(creep, closestDamagedAlly) > 1) {
+                                    creep.moveTo(closestDamagedAlly);
+                                }
+                            }
+                            // Otherwise move towards enemies to attack
+                            else if (range > DESIRED_RANGE) {
+                                creep.moveTo(closestEnemy);
+                            }
+                        } else {
+                            // Non-healing units just move towards enemies
+                            if (range > DESIRED_RANGE) {
+                                creep.moveTo(closestEnemy);
                             }
                         }
-                        // Otherwise move towards enemies to attack
-                        else if (range > DESIRED_RANGE) {
-                            creep.moveTo(closestEnemy);
-                        }
-                    } else {
-                        // Non-healing units just move towards enemies
-                        if (range > DESIRED_RANGE) {
-                            creep.moveTo(closestEnemy);
-                        }
                     }
+                    creep.rangedAttack(closestEnemy);
                 }
-                creep.rangedAttack(closestEnemy);
             } else {
-                console.log(`Creep ${creep.id} could not find a closest enemy despite enemies existing!`);
+                // All enemies are on ramparts or no valid targets - idle
+                this.idle(creep, damagedCreeps);
             }
         } else {
             // No enemies at all - idle behavior

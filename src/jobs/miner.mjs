@@ -5,6 +5,7 @@ import { SourceAssignmentStrategy } from './SourceAssignmentStrategy.mjs';
 import { ExtensionBuilder } from './ExtensionBuilder.mjs';
 import { MinerStateMachine } from './MinerStateMachine.mjs';
 import { BodyPartCalculator } from '../constants.mjs';
+import { CombatUtils } from '../utils/CombatUtils.mjs';
 
 // Miner job - dedicated resource extraction and extension building
 export class MinerJob extends ActiveCreep {
@@ -54,6 +55,13 @@ export class MinerJob extends ActiveCreep {
         
         // State: Moving to mining position
         if (MinerStateMachine.isMovingToPosition(this.memory)) {
+            // === DEFENSIVE POSTURING CHECK (only for miners not yet arrived) ===
+            const inDefensiveMode = CombatUtils.handleDefensiveRetreat(creep, this.gameState);
+            
+            if (inDefensiveMode) {
+                return; // Don't continue with normal mining movement
+            }
+            
             // Calculate target position if not already set
             let targetPos = MinerStateMachine.getTargetPosition(this.memory);
             if (!targetPos) {
