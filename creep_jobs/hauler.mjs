@@ -2,12 +2,12 @@ import { getObjectById, getObjectsByPrototype, findPath, getTerrainAt } from 'ga
 import { WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY } from 'game/constants';
 import { Source, StructureSpawn, StructureRoad, ConstructionSite } from 'game/prototypes';
 import { createConstructionSite } from 'game';
-import { Job } from './Job.mjs';
+import { ActiveCreep } from './ActiveCreep.mjs';
 
 const MAX_ROAD_CONSTRUCTION = 6;
 
 // Hauler job - resource gathering and construction
-export class HaulerJob extends Job {
+export class HaulerJob extends ActiveCreep {
     static get BODY() {
         return [WORK, CARRY, MOVE, MOVE];
     }
@@ -44,15 +44,15 @@ export class HaulerJob extends Job {
         }
     }
 
-    act(creepInfo, controller, winObjective) {
-        const creep = getObjectById(creepInfo.id);
+    act() {
+        const creep = getObjectById(this.id);
         if (!creep) {
             return;
         }
 
         // Initialize state if not set
-        if (!creepInfo.memory.state) {
-            creepInfo.memory.state = 'mining';
+        if (!this.memory.state) {
+            this.memory.state = 'mining';
         }
 
         // Get current carry capacity and amount
@@ -60,10 +60,10 @@ export class HaulerJob extends Job {
         const totalCapacity = creep.store.getCapacity(RESOURCE_ENERGY);
 
         // State machine logic
-        if (creepInfo.memory.state === 'mining') {
+        if (this.memory.state === 'mining') {
             // Check if we're at capacity
             if (usedCapacity >= totalCapacity) {
-                creepInfo.memory.state = 'hauling';
+                this.memory.state = 'hauling';
                 return;
             }
 
@@ -84,19 +84,19 @@ export class HaulerJob extends Job {
                     creep.moveTo(closestSource);
                 }
             }
-        } else if (creepInfo.memory.state === 'hauling') {
+        } else if (this.memory.state === 'hauling') {
             // Check if we're empty
             if (usedCapacity === 0) {
-                creepInfo.memory.state = 'mining';
+                this.memory.state = 'mining';
                 return;
             }
 
             // Check if there are any miner creeps by accessing the controller
-            const hasMinerCreeps = controller.creeps.some(c => c.job === 'miner');
+            const hasMinerCreeps = this.controller.creeps.some(c => c.jobName === 'miner');
 
             if (hasMinerCreeps) {
                 // Determine the target (either winObjective or spawn)
-                let target = winObjective;
+                let target = this.winObjective;
                 if (!target) {
                     target = getObjectsByPrototype(StructureSpawn).find(s => s.my);
                 }
@@ -127,16 +127,16 @@ export class HaulerJob extends Job {
                     }
 
                     if (creep.store[RESOURCE_ENERGY] < 5) { 
-                        creepInfo.memory.state = 'mining';
+                        this.memory.state = 'mining';
                         return;
                     }
                     
                     // Now move towards the target
                     // If target is winObjective, also try to build it
-                    if (winObjective && target === winObjective) {
-                        const buildResult = creep.build(winObjective);
+                    if (this.winObjective && target === this.winObjective) {
+                        const buildResult = creep.build(this.winObjective);
                         if (buildResult === ERR_NOT_IN_RANGE) {
-                            creep.moveTo(winObjective);
+                            creep.moveTo(this.winObjective);
                         }
                     } else {
                         // Moving to spawn

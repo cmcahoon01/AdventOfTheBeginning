@@ -8,7 +8,7 @@ import { BuildOrder } from './BuildOrder.mjs';
 const spawn = getObjectsByPrototype(StructureSpawn).find(i => i.my);
 const winObjective = getObjectsByPrototype(ConstructionSite).find(i => i.my);
 const screepController = new ScreepController();
-const buildOrder = new BuildOrder(screepController);
+const buildOrder = new BuildOrder(screepController, winObjective);
 
 export function loop() {
     // Check if there's a spawning creep that needs to be added to memory

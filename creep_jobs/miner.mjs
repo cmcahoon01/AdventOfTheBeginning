@@ -2,13 +2,13 @@ import { getObjectById, getObjectsByPrototype, getRange, getTerrainAt } from 'ga
 import { WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY, TERRAIN_WALL } from 'game/constants';
 import { Source, StructureSpawn, StructureExtension, ConstructionSite } from 'game/prototypes';
 import { createConstructionSite } from 'game';
-import { Job } from './Job.mjs';
+import { ActiveCreep } from './ActiveCreep.mjs';
 
 // Number of extensions each miner should create and fill
 export const EXTENSIONS_PER_MINER = 3;
 
 // Miner job - dedicated resource extraction and extension building
-export class MinerJob extends Job {
+export class MinerJob extends ActiveCreep {
     static get BODY() {
         return [WORK, WORK, WORK, WORK, CARRY, MOVE];
     }
@@ -164,59 +164,59 @@ export class MinerJob extends Job {
         return positions;
     }
 
-    act(creepInfo, controller, winObjective) {
-        const creep = getObjectById(creepInfo.id);
+    act() {
+        const creep = getObjectById(this.id);
         if (!creep) {
             return;
         }
         
         // Initialize memory if not set
-        if (!creepInfo.memory.initialized) {
+        if (!this.memory.initialized) {
             // Count how many miners exist before this one
-            const minerCount = controller.creeps.filter(c => 
-                c.job === 'miner' && c.id !== creepInfo.id
+            const minerCount = this.controller.creeps.filter(c => 
+                c.jobName === 'miner' && c.id !== this.id
             ).length;
             
             // Assign source based on miner index
             const assignedSource = this.assignSourceToMiner(minerCount);
             if (assignedSource) {
-                creepInfo.memory.sourceId = assignedSource.id;
-                creepInfo.memory.targetX = null;
-                creepInfo.memory.targetY = null;
-                creepInfo.memory.state = 'moving_to_position';
-                creepInfo.memory.stage = 1; // Stage 1: building extensions
-                creepInfo.memory.extensionsCreated = false;
+                this.memory.sourceId = assignedSource.id;
+                this.memory.targetX = null;
+                this.memory.targetY = null;
+                this.memory.state = 'moving_to_position';
+                this.memory.stage = 1; // Stage 1: building extensions
+                this.memory.extensionsCreated = false;
             }
-            creepInfo.memory.initialized = true;
+            this.memory.initialized = true;
         }
         
         // Get the assigned source
-        const source = getObjectById(creepInfo.memory.sourceId);
+        const source = getObjectById(this.memory.sourceId);
         if (!source) {
-            console.log(`Miner ${creepInfo.id} has no valid source`);
+            console.log(`Miner ${this.id} has no valid source`);
             return;
         }
         
         // State: Moving to mining position
-        if (creepInfo.memory.state === 'moving_to_position') {
+        if (this.memory.state === 'moving_to_position') {
             // Calculate target position if not already set
-            if (creepInfo.memory.targetX === null || creepInfo.memory.targetY === null) {
+            if (this.memory.targetX === null || this.memory.targetY === null) {
                 const miningPos = this.findMiningPosition(source);
                 if (miningPos) {
-                    creepInfo.memory.targetX = miningPos.x;
-                    creepInfo.memory.targetY = miningPos.y;
+                    this.memory.targetX = miningPos.x;
+                    this.memory.targetY = miningPos.y;
                 } else {
-                    console.log(`Miner ${creepInfo.id} couldn't find mining position`);
+                    console.log(`Miner ${this.id} couldn't find mining position`);
                     return;
                 }
             }
             
-            const targetPos = { x: creepInfo.memory.targetX, y: creepInfo.memory.targetY };
+            const targetPos = { x: this.memory.targetX, y: this.memory.targetY };
             
             // Check if we've arrived
             if (creep.x === targetPos.x && creep.y === targetPos.y) {
-                creepInfo.memory.state = 'mining';
-                console.log(`Miner ${creepInfo.id} arrived at mining position`);
+                this.memory.state = 'mining';
+                console.log(`Miner ${this.id} arrived at mining position`);
             } else {
                 // Move to the target position
                 creep.moveTo(targetPos);
@@ -225,7 +225,7 @@ export class MinerJob extends Job {
         }
         
         // State: Mining and working
-        if (creepInfo.memory.state === 'mining') {
+        if (this.memory.state === 'mining') {
             const usedCapacity = creep.store[RESOURCE_ENERGY] || 0;
             
             // Alternate between mining and using resources
@@ -233,15 +233,15 @@ export class MinerJob extends Job {
                 // Mine from source
                 const harvestResult = creep.harvest(source);
                 if (harvestResult === ERR_NOT_IN_RANGE) {
-                    console.log(`Miner ${creepInfo.id} not in range of source`);
+                    console.log(`Miner ${this.id} not in range of source`);
                 }
             } else {
                 // Use the resources based on current stage
-                if (creepInfo.memory.stage === 1) {
+                if (this.memory.stage === 1) {
                     // Stage 1: Create and build extensions
                     
                     // Create construction sites if not already done
-                    if (!creepInfo.memory.extensionsCreated) {
+                    if (!this.memory.extensionsCreated) {
                         // const extensionPositions = getExtensionPositions(creep, source);
                         
                         // // Create construction sites (limit to EXTENSIONS_PER_MINER)
@@ -269,7 +269,7 @@ export class MinerJob extends Job {
                             console.log(result);
                         }
                         
-                        creepInfo.memory.extensionsCreated = true;
+                        this.memory.extensionsCreated = true;
                     }
                     
                     // Find construction sites around the miner
@@ -286,7 +286,7 @@ export class MinerJob extends Job {
                         if (target) {
                             const buildResult = creep.build(target);
                             if (buildResult === ERR_NOT_IN_RANGE) {
-                                console.log(`Miner ${creepInfo.id} not in range of construction site`);
+                                console.log(`Miner ${this.id} not in range of construction site`);
                             }
                         }
                     } else {
@@ -299,13 +299,13 @@ export class MinerJob extends Job {
                         
                         if (nearbyExtensions.length >= EXTENSIONS_PER_MINER) {
                             // All extensions are built, move to stage 2
-                            creepInfo.memory.stage = 2;
-                            console.log(`Miner ${creepInfo.id} moving to stage 2 with ${nearbyExtensions.length} extensions`);
+                            this.memory.stage = 2;
+                            console.log(`Miner ${this.id} moving to stage 2 with ${nearbyExtensions.length} extensions`);
                         } else {
                             // console.log("extensions or sites not found");
                         }
                     }
-                } else if (creepInfo.memory.stage === 2) {
+                } else if (this.memory.stage === 2) {
                     // Stage 2: Deposit to least full extension
                     
                     // Find all extensions around the miner
@@ -334,7 +334,7 @@ export class MinerJob extends Job {
                         if (leastFullExtension) {
                             const transferResult = creep.transfer(leastFullExtension, RESOURCE_ENERGY);
                             if (transferResult === ERR_NOT_IN_RANGE) {
-                                console.log(`Miner ${creepInfo.id} not in range of extension`);
+                                console.log(`Miner ${this.id} not in range of extension`);
                             }
                         }
                     }

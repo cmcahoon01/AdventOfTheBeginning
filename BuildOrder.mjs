@@ -17,8 +17,9 @@ const BUILD_ORDER_TEMPLATE = [
 ];
 
 export class BuildOrder {
-    constructor(screepController) {
+    constructor(screepController, winObjective) {
         this.screepController = screepController;
+        this.winObjective = winObjective;
         this.buildOrderTemplate = BUILD_ORDER_TEMPLATE;
         // Track the job type of the creep currently being spawned
         this.pendingSpawnJob = null;
@@ -58,9 +59,9 @@ export class BuildOrder {
             cleric: 0
         };
 
-        for (const creepInfo of creeps) {
-            if (creepCounts[creepInfo.job] !== undefined) {
-                creepCounts[creepInfo.job]++;
+        for (const activeCreep of creeps) {
+            if (creepCounts[activeCreep.jobName] !== undefined) {
+                creepCounts[activeCreep.jobName]++;
             }
         }
 
@@ -120,7 +121,7 @@ export class BuildOrder {
             
             if (!alreadyAdded) {
                 // Add the creep to memory with its job
-                this.screepController.addCreep(creepId, this.pendingSpawnJob);
+                this.screepController.addCreep(creepId, this.pendingSpawnJob, this.winObjective);
                 console.log(`Added spawning ${this.pendingSpawnJob} with id ${creepId} to memory`);
             }
             // Clear pending job once we've checked and processed it
