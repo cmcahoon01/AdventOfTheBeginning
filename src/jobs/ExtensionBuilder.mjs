@@ -4,6 +4,7 @@ import { TERRAIN_WALL, ERR_NOT_IN_RANGE } from 'game/constants';
 import { createConstructionSite } from 'game';
 import { isAdjacent } from '../utils/RangeUtils.mjs';
 import { MapTopology } from '../constants.mjs';
+import { TerrainAnalyzer } from '../combat/TerrainAnalyzer.mjs';
 
 /**
  * Manages extension construction for miners.
@@ -34,8 +35,7 @@ export class ExtensionBuilder {
             const pos = { x: creep.x + offset.dx, y: creep.y + offset.dy };
             
             // Skip if out of bounds
-            if (pos.x < 0 || pos.x >= MapTopology.ARENA_SIZE || 
-                pos.y < 0 || pos.y >= MapTopology.ARENA_SIZE) {
+            if (!TerrainAnalyzer.isValidPosition(pos)) {
                 continue;
             }
             

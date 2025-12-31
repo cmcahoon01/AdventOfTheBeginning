@@ -51,8 +51,7 @@ export class HaulerJob extends ActiveCreep {
                 return;
             }
 
-            // Find the closest source, excluding corner sources 
-            // (y < MapTopology.CORNER_TOP_THRESHOLD or y > MapTopology.CORNER_BOTTOM_THRESHOLD)
+            // Find the closest source, excluding corner sources (y < CORNER_TOP or y > CORNER_BOTTOM)
             // This forces haulers to use the central sources near the middle of the map
             const allSources = this.gameState.getSources();
             const centralSources = allSources.filter(source => 

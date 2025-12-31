@@ -37,10 +37,9 @@ export class BuildStrategy {
         }
 
         // Phase 1: Initial build order (cleric, hauler)
-        const INITIAL_BUILD_ORDER = BuildConfig.INITIAL_BUILD.map(jobName => ({ jobName }));
-        for (let i = 0; i < INITIAL_BUILD_ORDER.length; i++) {
-            const template = INITIAL_BUILD_ORDER[i];
-            const jobName = template.jobName;
+        // Convert BuildConfig.INITIAL_BUILD to the expected format
+        for (let i = 0; i < BuildConfig.INITIAL_BUILD.length; i++) {
+            const jobName = BuildConfig.INITIAL_BUILD[i];
             const jobClass = Jobs[jobName];
             
             if (!jobClass) {
@@ -51,7 +50,7 @@ export class BuildStrategy {
             // Count how many of this job should exist up to and including this position
             let expectedCount = 0;
             for (let j = 0; j <= i; j++) {
-                if (INITIAL_BUILD_ORDER[j].jobName === jobName) {
+                if (BuildConfig.INITIAL_BUILD[j] === jobName) {
                     expectedCount++;
                 }
             }
