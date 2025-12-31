@@ -1,8 +1,8 @@
 import { getObjectsByPrototype } from 'game/utils';
 import { StructureSpawn, StructureExtension } from 'game/prototypes';
 import { RESOURCE_ENERGY } from 'game/constants';
-import { Jobs } from './creep_jobs/JobRegistry.mjs';
-import { compareTeamStrengths } from './strengthEstimator.mjs';
+import { Jobs } from '../jobs/JobRegistry.mjs';
+import { compareTeamStrengths } from '../combat/strengthEstimator.mjs';
 
 // Initial build order (always the same)
 // After this, build order becomes adaptive based on team strength
