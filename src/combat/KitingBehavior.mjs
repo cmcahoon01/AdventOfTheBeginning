@@ -61,10 +61,14 @@ export class KitingBehavior {
     /**
      * Find the nearest enemy to a position.
      * @param {Object} position - Position with x and y coordinates
-     * @param {Array} enemies - Array of enemy creeps
+     * @param {Array} enemies - Array of enemy creeps (must not be empty)
      * @returns {Object} The nearest enemy
      */
     static findNearestEnemy(position, enemies) {
+        if (enemies.length === 0) {
+            return null;
+        }
+        
         let nearestEnemy = enemies[0];
         let minRange = getRange(position, nearestEnemy);
         
@@ -145,12 +149,18 @@ export class KitingBehavior {
         // If there are still ties, use the furthest Euclidean distance from nearest enemy
         let furthestPosition = bestPositions[0];
         let closestEnemy = this.findNearestEnemy(furthestPosition, enemies);
+        if (!closestEnemy) {
+            return furthestPosition; // Fallback if no enemy found
+        }
+        
         let maxSquaredDistance = (furthestPosition.x - closestEnemy.x) ** 2 + 
                                  (furthestPosition.y - closestEnemy.y) ** 2;
         
         for (let i = 1; i < bestPositions.length; i++) {
             const pos = bestPositions[i];
             const nearestEnemy = this.findNearestEnemy(pos, enemies);
+            if (!nearestEnemy) continue;
+            
             const squaredDistance = (pos.x - nearestEnemy.x) ** 2 + 
                                     (pos.y - nearestEnemy.y) ** 2;
             
