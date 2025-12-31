@@ -50,6 +50,8 @@ export class FighterJob extends ActiveCreep {
         const hostileCreeps = CombatUtils.filterMeleeTargetableEnemies(allHostileCreeps, ramparts);
         
         // Check if there are any enemies within range 5
+        // Range 5 is chosen as the engagement threshold - close enough to respond to threats
+        // but allows checking for fortified miners if no immediate danger exists
         const enemiesInRange5 = hostileCreeps.filter(enemy => getRange(creep, enemy) <= 5);
         
         // If there are no targetable enemies within range 5, check for fortified miner

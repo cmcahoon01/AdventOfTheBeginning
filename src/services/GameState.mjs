@@ -1,5 +1,6 @@
 import { getObjectsByPrototype } from 'game/utils';
 import { Creep, StructureSpawn, StructureRampart, StructureExtension, Source, ConstructionSite } from 'game/prototypes';
+import { WORK } from 'game/constants';
 import { MapTopology } from '../constants.mjs';
 
 /**
@@ -172,7 +173,7 @@ export class GameState {
         // Check each enemy creep to see if it's a miner on a rampart near a corner source
         for (const creep of this.enemyCreeps) {
             // Check if this creep has WORK parts (is a miner)
-            const hasWorkParts = creep.body.some(bodyPart => bodyPart.type === 'work');
+            const hasWorkParts = creep.body.some(bodyPart => bodyPart.type === WORK);
             if (!hasWorkParts) {
                 continue;
             }
@@ -185,6 +186,7 @@ export class GameState {
             }
             
             // Check if this creep is near a corner source (within range 2)
+            // Range 2 allows for sources in corners with ramparts blocking direct adjacency
             for (const source of cornerSources) {
                 const dx = Math.abs(creep.x - source.x);
                 const dy = Math.abs(creep.y - source.y);
