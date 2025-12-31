@@ -21,6 +21,11 @@ export class MinerJob extends ActiveCreep {
         return 'miner';
     }
 
+    totalCapacity = 50 * MinerJob.BODY.filter(part => part === CARRY).length;
+    workParts = MinerJob.BODY.filter(part => part === WORK).length;
+    miningProduction = 2 * this.workParts;
+    buildingProduction = 5 * this.workParts;
+
     act() {
         const creep = getObjectById(this.id);
         if (!creep) {
@@ -89,35 +94,44 @@ export class MinerJob extends ActiveCreep {
         // State: Mining and working
         if (MinerStateMachine.isMining(this.memory)) {
             const usedCapacity = creep.store[RESOURCE_ENERGY] || 0;
-            
-            // Alternate between mining and using resources
-            if (usedCapacity <= 10 * MinerJob.BODY.filter(part => part === WORK).length) {
-                // Mine from source
-                const harvestResult = creep.harvest(source);
-                if (harvestResult === ERR_NOT_IN_RANGE) {
-                    console.log(`Miner ${this.id} not in range of source`);
-                } else if (MinerStateMachine.isStage2(this.memory)) {
+            if (MinerStateMachine.isStage1(this.memory)) {
+                // Alternate between mining and using resources
+                if (usedCapacity < this.buildingProduction) {
+                    // Mine from source
+                    const harvestResult = creep.harvest(source);
+                    if (harvestResult === ERR_NOT_IN_RANGE) {
+                        console.log(`Miner ${this.id} not in range of source`);
+                    }
+                } else {
+                    // Create construction sites if not already done
+                    if (!MinerStateMachine.extensionsCreated(this.memory)) {
+                        ExtensionBuilder.createExtensionSites(creep, source);
+                        MinerStateMachine.markExtensionsCreated(this.memory);
+                    }
+
+                    // Try to build nearby construction sites
+                    const isBuilding = ExtensionBuilder.buildNearbyConstructionSites(creep, this.gameState);
+
+                    if (!isBuilding) {
+                        // Check if all extensions nearby are built (construction is complete)
+                        if (ExtensionBuilder.areExtensionsComplete(creep, this.gameState)) {
+                            // All extensions are built, move to stage 2
+                            MinerStateMachine.transitionToStage2(this.memory);
+                            console.log(`Miner ${this.id} moving to stage 2`);
+                        }
+                    }
+                }
+            } else if (MinerStateMachine.isStage2(this.memory)) {
+                // Alternate between mining and using resources
+                if (usedCapacity < Math.min(100, this.totalCapacity - this.miningProduction)) {
+                    // Mine from source
+                    const harvestResult = creep.harvest(source);
+                    if (harvestResult === ERR_NOT_IN_RANGE) {
+                        console.log(`Miner ${this.id} not in range of source`);
+                    }
+                } else {
                     // Stage 2: Deposit to least full extension
                     ExtensionBuilder.fillExtensions(creep, RESOURCE_ENERGY, this.gameState);
-                }
-            } else if (MinerStateMachine.isStage1(this.memory)) {
-
-                // Create construction sites if not already done
-                if (!MinerStateMachine.extensionsCreated(this.memory)) {
-                    ExtensionBuilder.createExtensionSites(creep, source);
-                    MinerStateMachine.markExtensionsCreated(this.memory);
-                }
-
-                // Try to build nearby construction sites
-                const isBuilding = ExtensionBuilder.buildNearbyConstructionSites(creep, this.gameState);
-
-                if (!isBuilding) {
-                    // Check if all extensions nearby are built (construction is complete)
-                    if (ExtensionBuilder.areExtensionsComplete(creep, this.gameState)) {
-                        // All extensions are built, move to stage 2
-                        MinerStateMachine.transitionToStage2(this.memory);
-                        console.log(`Miner ${this.id} moving to stage 2`);
-                    }
                 }
             }
         }
