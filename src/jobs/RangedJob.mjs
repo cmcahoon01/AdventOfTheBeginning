@@ -1,12 +1,10 @@
-import { getObjectById, getObjectsByPrototype, getRange, getTerrainAt, findInRange } from 'game/utils';
-import { TERRAIN_WALL, TERRAIN_SWAMP } from 'game/constants';
-import { EFFECT_SLOWDOWN } from "arena/season_1/construct_and_control/basic/constants";
-import { Creep, StructureSpawn, StructureRampart, Structure, AreaEffect } from 'game/prototypes';
+import { getObjectById, getObjectsByPrototype, getRange } from 'game/utils';
+import { Creep, StructureSpawn, StructureRampart, Structure } from 'game/prototypes';
 import { ActiveCreep } from './ActiveCreep.mjs';
+import { KitingBehavior } from '../combat/KitingBehavior.mjs';
 
 // Kiting behavior constants
 const DESIRED_RANGE = 3;
-const ARENA_SIZE = 100; // Arena dimensions
 
 // Base class for ranged combat units (archer and cleric)
 export class RangedJob extends ActiveCreep {
@@ -19,146 +17,17 @@ export class RangedJob extends ActiveCreep {
 
     // Get all valid adjacent positions that the creep can move to
     getValidAdjacentPositions(creep, allCreeps, allStructures) {
-        const adjacentOffsets = [
-            { x: 0, y: -1 },   // TOP
-            { x: 1, y: -1 },   // TOP_RIGHT
-            { x: 1, y: 0 },    // RIGHT
-            { x: 1, y: 1 },    // BOTTOM_RIGHT
-            { x: 0, y: 1 },    // BOTTOM
-            { x: -1, y: 1 },   // BOTTOM_LEFT
-            { x: -1, y: 0 },   // LEFT
-            { x: -1, y: -1 }   // TOP_LEFT
-        ];
-        
-        const validPositions = [];
-        
-        for (const offset of adjacentOffsets) {
-            const pos = { x: creep.x + offset.x, y: creep.y + offset.y };
-            
-            // Check if position is within bounds
-            if (pos.x < 0 || pos.x >= ARENA_SIZE || pos.y < 0 || pos.y >= ARENA_SIZE) {
-                continue;
-            }
-            
-            // Check if position is a wall
-            const terrain = getTerrainAt(pos);
-            if (terrain === TERRAIN_WALL) {
-                continue;
-            }
-            
-            // Check if position is blocked by a creep
-            const hasCreep = allCreeps.some(c => c.x === pos.x && c.y === pos.y);
-            if (hasCreep) {
-                continue;
-            }
-            
-            // Check if position is blocked by an obstacle structure
-            const hasObstacle = allStructures.some(s => 
-                s.x === pos.x && s.y === pos.y && 
-                (s.constructor.name === 'StructureWall' || 
-                 (s.constructor.name === 'StructureRampart' && !s.my))
-            );
-            if (hasObstacle) {
-                continue;
-            }
-            
-            validPositions.push(pos);
-        }
-        
-        return validPositions;
+        return KitingBehavior.getValidAdjacentPositions(creep, allCreeps, allStructures);
     }
 
     // Find the nearest enemy to a position
     findNearestEnemy(position, enemies) {
-        let nearestEnemy = enemies[0];
-        let minRange = getRange(position, nearestEnemy);
-        
-        for (let i = 1; i < enemies.length; i++) {
-            const range = getRange(position, enemies[i]);
-            if (range < minRange) {
-                minRange = range;
-                nearestEnemy = enemies[i];
-            }
-        }
-        
-        return nearestEnemy;
+        return KitingBehavior.findNearestEnemy(position, enemies);
     }
 
     // Find the best retreat position from enemies
     findBestRetreatPosition(creep, enemies, allCreeps, allStructures) {
-        // Guard against empty enemies array
-        if (enemies.length === 0) {
-            console.log("No enemies to retreat from!");
-            return null;
-        }
-        
-        const validPositions = this.getValidAdjacentPositions(creep, allCreeps, allStructures);
-        
-        if (validPositions.length === 0) {
-            return null; // No valid positions to move to
-        }
-        
-        // Find the closest enemy to each position
-        const positionsWithDistances = validPositions.map(pos => {
-            const minEnemyDistance = Math.min(...enemies.map(enemy => getRange(pos, enemy)));
-            return { pos, minEnemyDistance };
-        });
-        
-        // Find the maximum distance from enemies
-        const maxDistance = Math.max(...positionsWithDistances.map(p => p.minEnemyDistance));
-        
-        // Filter positions that have maximum distance from enemies
-        let bestPositions = positionsWithDistances
-            .filter(p => p.minEnemyDistance === maxDistance)
-            .map(p => p.pos);
-        
-        // If only one position, return it
-        if (bestPositions.length === 1) {
-            return bestPositions[0];
-        }
-
-        const areaEffects = getObjectsByPrototype(AreaEffect);
-
-        // If there are ties, avoid stepping on swamp tiles or slowdown area effects
-        const nonSwampPositions = bestPositions.filter(pos => {
-            const terrain = getTerrainAt(pos);
-            if (terrain === TERRAIN_SWAMP) return false;
-
-            // findInRange with range 0 finds effects exactly on that tile
-            const effectsHere = findInRange(pos, areaEffects, 0);
-            // Exclude if any slowdown effect is present
-            return !effectsHere.some(e => e.effect === EFFECT_SLOWDOWN);
-        });
-        
-        // Use non-swamp positions if available, otherwise use all best positions
-        if (nonSwampPositions.length > 0) {
-            bestPositions = nonSwampPositions;
-        }
-        
-        // If only one position after swamp filtering, return it
-        if (bestPositions.length === 1) {
-            return bestPositions[0];
-        }
-        
-        // If there are still ties, use the furthest Euclidean distance from nearest enemy
-        let furthestPosition = bestPositions[0];
-        let closestEnemy = this.findNearestEnemy(furthestPosition, enemies);
-        let maxSquaredDistance = (furthestPosition.x - closestEnemy.x) ** 2 + 
-                                 (furthestPosition.y - closestEnemy.y) ** 2;
-        
-        for (let i = 1; i < bestPositions.length; i++) {
-            const pos = bestPositions[i];
-            const nearestEnemy = this.findNearestEnemy(pos, enemies);
-            const squaredDistance = (pos.x - nearestEnemy.x) ** 2 + 
-                                    (pos.y - nearestEnemy.y) ** 2;
-            
-            if (squaredDistance > maxSquaredDistance) {
-                maxSquaredDistance = squaredDistance;
-                furthestPosition = pos;
-            }
-        }
-        
-        return furthestPosition;
+        return KitingBehavior.findBestRetreatPosition(creep, enemies, allCreeps, allStructures);
     }
 
     // Idle behavior - move towards enemy spawn
