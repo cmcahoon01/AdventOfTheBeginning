@@ -15,7 +15,7 @@ This project implements a bot for Screeps Arena with approximately 1,500 lines o
 
 ### Core Components
 
-- **`src/main.mjs`**: Entry point with the main game loop
+- **`main.mjs`**: Entry point with the main game loop
 - **`src/controllers/`**: High-level game logic controllers
   - `ScreepController.mjs`: Manages all creeps and their lifecycle
   - `BuildOrder.mjs`: Determines build queue based on game state
@@ -48,8 +48,8 @@ The bot follows a two-phase build strategy:
 
 ```
 AdventOfTheBeginning/
+├── main.mjs                  # Entry point (loaded by Screeps Arena)
 ├── src/
-│   ├── main.mjs              # Entry point
 │   ├── controllers/          # Game logic controllers
 │   ├── combat/               # Combat systems
 │   └── jobs/                 # Creep behaviors
@@ -62,7 +62,7 @@ AdventOfTheBeginning/
 ### Running the Bot
 
 1. Clone this repository into your Screeps Arena bot directory
-2. The arena will automatically load `src/main.mjs` as the entry point
+2. The arena will automatically load `main.mjs` as the entry point
 3. Deploy and run in the Screeps Arena client
 
 ### Development
