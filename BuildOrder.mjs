@@ -11,6 +11,12 @@ const INITIAL_BUILD_ORDER = [
     { jobName: 'hauler' }
 ];
 
+// Strategy threshold: ratio >= 0.8 means we're stronger or roughly equal
+const STRENGTH_THRESHOLD = 0.8;
+
+// Military build ratio: 3 archers per 1 cleric
+const ARCHER_TO_CLERIC_RATIO = 3;
+
 export class BuildOrder {
     constructor(screepController, winObjective) {
         this.screepController = screepController;
@@ -92,8 +98,7 @@ export class BuildOrder {
         const comparison = compareTeamStrengths();
         
         // Determine if we're stronger or roughly equal
-        // Consider it roughly equal if ratio is between 0.8 and 1.2
-        const isStrongerOrEqual = comparison.ratio >= 0.8;
+        const isStrongerOrEqual = comparison.ratio >= STRENGTH_THRESHOLD;
         
         console.log(`Team strength - My: ${comparison.myTeam.strength.toFixed(1)}, Enemy: ${comparison.enemyTeam.strength.toFixed(1)}, Ratio: ${comparison.ratio.toFixed(2)}, Strategy: ${isStrongerOrEqual ? 'LOGISTICS' : 'MILITARY'}`);
         
@@ -121,10 +126,10 @@ export class BuildOrder {
             const militaryClerics = Math.max(0, creepCounts.cleric - 1);
             const militaryArchers = creepCounts.archer;
             
-            // Build archers if we need more to maintain 3:1 ratio
-            // We want 3 archers for every 1 cleric (after the initial one)
-            // When militaryClerics is 0, we should build 3 archers before the next cleric
-            const desiredArchers = (militaryClerics + 1) * 3;
+            // Build archers if we need more to maintain the ratio
+            // We want ARCHER_TO_CLERIC_RATIO archers for every 1 cleric (after the initial one)
+            // When militaryClerics is 0, we should build that many archers before the next cleric
+            const desiredArchers = (militaryClerics + 1) * ARCHER_TO_CLERIC_RATIO;
             
             if (militaryArchers < desiredArchers) {
                 const archerClass = Jobs['archer'];
