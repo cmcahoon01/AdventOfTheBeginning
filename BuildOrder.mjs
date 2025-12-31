@@ -2,23 +2,25 @@ import { getObjectsByPrototype } from 'game/utils';
 import { StructureSpawn, StructureExtension } from 'game/prototypes';
 import { RESOURCE_ENERGY } from 'game/constants';
 import { Jobs } from './creep_jobs/JobRegistry.mjs';
+import { compareTeamStrengths } from './strengthEstimator.mjs';
 
-// Build order configuration
-// Each entry specifies the job type
-const BUILD_ORDER_TEMPLATE = [
+// Initial build order (always the same)
+// After this, build order becomes adaptive based on team strength
+const INITIAL_BUILD_ORDER = [
     { jobName: 'cleric' },
-    { jobName: 'hauler' },
-    { jobName: 'miner' },
-    { jobName: 'fighter' },
-    { jobName: 'archer' }
-    // After position 5, haulers are built infinitely
+    { jobName: 'hauler' }
 ];
+
+// Strategy threshold: ratio >= 0.8 means we're stronger or roughly equal
+const STRENGTH_THRESHOLD = 0.8;
+
+// Military build ratio: 3 archers per 1 cleric
+const ARCHER_TO_CLERIC_RATIO = 3;
 
 export class BuildOrder {
     constructor(screepController, winObjective) {
         this.screepController = screepController;
         this.winObjective = winObjective;
-        this.buildOrderTemplate = BUILD_ORDER_TEMPLATE;
         // Track the job type of the creep currently being spawned
         this.pendingSpawnJob = null;
     }
@@ -63,9 +65,9 @@ export class BuildOrder {
             }
         }
 
-        // Check each position in the build order template
-        for (let i = 0; i < this.buildOrderTemplate.length; i++) {
-            const template = this.buildOrderTemplate[i];
+        // Phase 1: Initial build order (cleric, hauler)
+        for (let i = 0; i < INITIAL_BUILD_ORDER.length; i++) {
+            const template = INITIAL_BUILD_ORDER[i];
             const jobName = template.jobName;
             const jobClass = Jobs[jobName];
             
@@ -77,7 +79,7 @@ export class BuildOrder {
             // Count how many of this job should exist up to and including this position
             let expectedCount = 0;
             for (let j = 0; j <= i; j++) {
-                if (this.buildOrderTemplate[j].jobName === jobName) {
+                if (INITIAL_BUILD_ORDER[j].jobName === jobName) {
                     expectedCount++;
                 }
             }
@@ -92,13 +94,60 @@ export class BuildOrder {
             }
         }
 
-        // After completing the initial build order, build haulers infinitely
-        const haulerClass = Jobs['hauler'];
-        return { 
-            job: 'hauler', 
-            body: haulerClass.BODY, 
-            cost: haulerClass.COST 
-        };
+        // Phase 2: Adaptive build order based on team strength
+        const comparison = compareTeamStrengths();
+        
+        // Determine if we're stronger or roughly equal
+        const isStrongerOrEqual = comparison.ratio >= STRENGTH_THRESHOLD;
+        
+        console.log(`Team strength - My: ${comparison.myTeam.strength.toFixed(1)}, Enemy: ${comparison.enemyTeam.strength.toFixed(1)}, Ratio: ${comparison.ratio.toFixed(2)}, Strategy: ${isStrongerOrEqual ? 'LOGISTICS' : 'MILITARY'}`);
+        
+        if (isStrongerOrEqual) {
+            // Logistics path: Build 2 miners, then haulers
+            if (creepCounts.miner < 2) {
+                const minerClass = Jobs['miner'];
+                return {
+                    job: 'miner',
+                    body: minerClass.BODY,
+                    cost: minerClass.COST
+                };
+            }
+            
+            // After 2 miners, build haulers infinitely
+            const haulerClass = Jobs['hauler'];
+            return {
+                job: 'hauler',
+                body: haulerClass.BODY,
+                cost: haulerClass.COST
+            };
+        } else {
+            // Military path: Build archers and clerics at 3:1 ratio
+            // Count military units (exclude initial cleric)
+            const militaryClerics = Math.max(0, creepCounts.cleric - 1);
+            const militaryArchers = creepCounts.archer;
+            
+            // Build archers if we need more to maintain the ratio
+            // We want ARCHER_TO_CLERIC_RATIO archers for every 1 cleric (after the initial one)
+            // When militaryClerics is 0, we should build that many archers before the next cleric
+            const desiredArchers = (militaryClerics + 1) * ARCHER_TO_CLERIC_RATIO;
+            
+            if (militaryArchers < desiredArchers) {
+                const archerClass = Jobs['archer'];
+                return {
+                    job: 'archer',
+                    body: archerClass.BODY,
+                    cost: archerClass.COST
+                };
+            } else {
+                // Build a cleric to maintain the ratio
+                const clericClass = Jobs['cleric'];
+                return {
+                    job: 'cleric',
+                    body: clericClass.BODY,
+                    cost: clericClass.COST
+                };
+            }
+        }
     }
 
     // Check if there's a spawning creep that hasn't been added to memory yet
