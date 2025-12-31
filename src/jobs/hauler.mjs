@@ -53,11 +53,21 @@ export class HaulerJob extends ActiveCreep {
             const spawn = this.gameState.getMySpawn();
             const usedCapacity = creep.store[RESOURCE_ENERGY] || 0;
             
-            if (spawn && usedCapacity === 0) {
+            if (!spawn) {
+                // No spawn exists, can't withdraw. Skip this initialization.
+                this.gameState.setHasInitializedWinObjective();
+                return;
+            }
+            
+            if (usedCapacity === 0) {
                 // Withdraw from spawn
                 const withdrawResult = creep.withdraw(spawn, RESOURCE_ENERGY);
                 if (withdrawResult === ERR_NOT_IN_RANGE) {
                     creep.moveTo(spawn);
+                } else if (withdrawResult !== OK) {
+                    // Withdraw failed for some reason (e.g., spawn is empty, creep is full)
+                    // Set flag to prevent getting stuck in this state
+                    this.gameState.setHasInitializedWinObjective();
                 }
                 return;
             } else if (usedCapacity > 0) {
@@ -67,6 +77,9 @@ export class HaulerJob extends ActiveCreep {
                     creep.moveTo(this.winObjective);
                 } else if (buildResult === OK) {
                     // Successfully built, set the flag
+                    this.gameState.setHasInitializedWinObjective();
+                } else {
+                    // Build failed for some other reason, set flag to prevent getting stuck
                     this.gameState.setHasInitializedWinObjective();
                 }
                 return;
