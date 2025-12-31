@@ -30,7 +30,7 @@ export class CombatUtils {
         }
         
         // Check if any enemy is NOT on a rampart
-        const enemiesNotOnRamparts = this.filterMeleeTargetableEnemies(enemies, ramparts);
+        const enemiesNotOnRamparts = CombatUtils.filterMeleeTargetableEnemies(enemies, ramparts);
         return enemiesNotOnRamparts.length > 0;
     }
     
@@ -73,7 +73,7 @@ export class CombatUtils {
     }
     /**
      * Find a safe rampart position to retreat to.
-     * Prefers ramparts closer to our spawn.
+     * Returns the closest friendly rampart to the creep.
      * @param {Creep} creep - The creep looking for safety
      * @param {GameState} gameState - The game state service
      * @returns {StructureRampart|null} The rampart to retreat to, or null if none available
@@ -85,7 +85,7 @@ export class CombatUtils {
             return null;
         }
         
-        // Find the closest friendly rampart
+        // Find the closest friendly rampart to the creep
         const closestRampart = creep.findClosestByRange(myRamparts);
         return closestRampart;
     }
