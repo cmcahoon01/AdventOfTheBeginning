@@ -37,7 +37,6 @@ export class BuildStrategy {
         }
 
         // Phase 1: Initial build order (cleric, hauler)
-        // Convert BuildConfig.INITIAL_BUILD to the expected format
         for (let i = 0; i < BuildConfig.INITIAL_BUILD.length; i++) {
             const jobName = BuildConfig.INITIAL_BUILD[i];
             const jobClass = Jobs[jobName];
