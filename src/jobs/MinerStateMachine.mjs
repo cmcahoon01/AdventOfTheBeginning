@@ -6,10 +6,10 @@ export class MinerStateMachine {
     /**
      * Initialize miner memory.
      * @param {Object} memory - Miner's memory object
-     * @param {number} minerCount - Total count of miners (not used, kept for backward compatibility)
+     * @param {number} minerIndex - The 0-based index of this miner
      * @param {Object} assignedSource - The source assigned to this miner
      */
-    static initialize(memory, minerCount, assignedSource) {
+    static initialize(memory, minerIndex, assignedSource) {
         memory.sourceId = assignedSource.id;
         memory.targetX = null;
         memory.targetY = null;

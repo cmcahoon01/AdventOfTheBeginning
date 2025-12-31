@@ -30,18 +30,18 @@ export class MinerJob extends ActiveCreep {
         
         // Initialize memory if not set
         if (!this.memory.initialized) {
-            // Count how many miners exist before this one
-            const minerCount = this.controller.creeps.filter(c => 
+            // Count how many miners exist before this one (this is the 0-based index)
+            const minerIndex = this.controller.creeps.filter(c => 
                 c.jobName === 'miner' && c.id !== this.id
             ).length;
             
             // Assign source based on miner index
-            const assignedSource = SourceAssignmentStrategy.assignSourceToMiner(minerCount);
+            const assignedSource = SourceAssignmentStrategy.assignSourceToMiner(minerIndex);
             if (assignedSource) {
-                MinerStateMachine.initialize(this.memory, minerCount, assignedSource);
+                MinerStateMachine.initialize(this.memory, minerIndex, assignedSource);
             } else {
                 // No source available - mark as initialized to avoid repeated attempts
-                console.log(`Miner ${this.id} could not be assigned a source (miner count: ${minerCount})`);
+                console.log(`Miner ${this.id} could not be assigned a source (index: ${minerIndex})`);
                 this.memory.initialized = true;
                 return; // Exit early - this miner cannot function
             }
