@@ -63,6 +63,18 @@ export class BuildStrategy {
                 };
             }
         }
+        
+        // Phase 1.5: Check for fortified miner - prioritize building a fighter if detected
+        const fortifiedMiner = this.gameState.getFortifiedMiner();
+        if (fortifiedMiner && creepCounts.fighter === 0) {
+            console.log('Fortified miner detected! Building fighter to counter.');
+            const fighterClass = Jobs['fighter'];
+            return {
+                job: 'fighter',
+                body: fighterClass.BODY,
+                cost: fighterClass.COST
+            };
+        }
 
         // Phase 2: Adaptive build order based on team strength
         const comparison = compareTeamStrengths(this.gameState);
