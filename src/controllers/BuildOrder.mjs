@@ -1,214 +1,47 @@
-import { getObjectsByPrototype } from 'game/utils';
-import { StructureSpawn, StructureExtension } from 'game/prototypes';
-import { RESOURCE_ENERGY } from 'game/constants';
-import { Jobs } from '../jobs/JobRegistry.mjs';
-import { compareTeamStrengths } from '../combat/strengthEstimator.mjs';
+import { EnergyManager } from './EnergyManager.mjs';
+import { BuildQueue } from './BuildQueue.mjs';
+import { BuildStrategy } from './BuildStrategy.mjs';
 
-// Initial build order (always the same)
-// After this, build order becomes adaptive based on team strength
-const INITIAL_BUILD_ORDER = [
-    { jobName: 'cleric' },
-    { jobName: 'hauler' }
-];
-
-// Strategy threshold: ratio >= 0.8 means we're stronger or roughly equal
-const STRENGTH_THRESHOLD = 0.8;
-
-// Military build ratio: 3 archers per 1 cleric
-const ARCHER_TO_CLERIC_RATIO = 3;
-
+/**
+ * Orchestrates the build order system by coordinating energy management,
+ * build strategy decisions, and spawn queue management.
+ */
 export class BuildOrder {
     constructor(screepController, winObjective) {
         this.screepController = screepController;
         this.winObjective = winObjective;
-        // Track the job type of the creep currently being spawned
-        this.pendingSpawnJob = null;
+        
+        // Initialize component managers
+        this.energyManager = new EnergyManager();
+        this.buildQueue = new BuildQueue(screepController);
+        this.buildStrategy = new BuildStrategy();
     }
 
-    // Calculate total available energy from spawn and all containers
-    getTotalEnergy() {
-        let totalEnergy = 0;
-
-        // Get energy from spawn
-        const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
-        if (spawn && spawn.store) {
-            totalEnergy += spawn.store[RESOURCE_ENERGY] || 0;
-        }
-
-        // Get energy from all containers
-        const extensions = getObjectsByPrototype(StructureExtension).filter(c => c.my);
-        for (const extension of extensions) {
-            if (extension.store) {
-                totalEnergy += extension.store[RESOURCE_ENERGY] || 0;
-            }
-        }
-
-        return totalEnergy;
-    }
-
-    // Get the next creep to build based on the current build order state
-    getNextCreepToBuild() {
-        const creeps = this.screepController.creeps;
-        
-        // Count creeps by job type
-        const creepCounts = {
-            fighter: 0,
-            archer: 0,
-            hauler: 0,
-            miner: 0,
-            cleric: 0
-        };
-
-        for (const activeCreep of creeps) {
-            if (creepCounts[activeCreep.jobName] !== undefined) {
-                creepCounts[activeCreep.jobName]++;
-            }
-        }
-
-        // Phase 1: Initial build order (cleric, hauler)
-        for (let i = 0; i < INITIAL_BUILD_ORDER.length; i++) {
-            const template = INITIAL_BUILD_ORDER[i];
-            const jobName = template.jobName;
-            const jobClass = Jobs[jobName];
-            
-            if (!jobClass) {
-                console.log(`Warning: Unknown job type '${jobName}' in build order`);
-                continue;
-            }
-            
-            // Count how many of this job should exist up to and including this position
-            let expectedCount = 0;
-            for (let j = 0; j <= i; j++) {
-                if (INITIAL_BUILD_ORDER[j].jobName === jobName) {
-                    expectedCount++;
-                }
-            }
-
-            // If we don't have enough of this job type, build it
-            if (creepCounts[jobName] < expectedCount) {
-                return { 
-                    job: jobName, 
-                    body: jobClass.BODY, 
-                    cost: jobClass.COST 
-                };
-            }
-        }
-
-        // Phase 2: Adaptive build order based on team strength
-        const comparison = compareTeamStrengths();
-        
-        // Determine if we're stronger or roughly equal
-        const isStrongerOrEqual = comparison.ratio >= STRENGTH_THRESHOLD;
-        
-        console.log(`Team strength - My: ${comparison.myTeam.strength.toFixed(1)}, Enemy: ${comparison.enemyTeam.strength.toFixed(1)}, Ratio: ${comparison.ratio.toFixed(2)}, Strategy: ${isStrongerOrEqual ? 'LOGISTICS' : 'MILITARY'}`);
-        
-        if (isStrongerOrEqual) {
-            // Logistics path: Build 2 miners, then haulers
-            if (creepCounts.miner < 2) {
-                const minerClass = Jobs['miner'];
-                return {
-                    job: 'miner',
-                    body: minerClass.BODY,
-                    cost: minerClass.COST
-                };
-            }
-            
-            // After 2 miners, build haulers infinitely
-            const haulerClass = Jobs['hauler'];
-            return {
-                job: 'hauler',
-                body: haulerClass.BODY,
-                cost: haulerClass.COST
-            };
-        } else {
-            // Military path: Build archers and clerics at 3:1 ratio
-            // Count military units (exclude initial cleric)
-            const militaryClerics = Math.max(0, creepCounts.cleric);
-            const militaryArchers = creepCounts.archer;
-            
-            // Build archers if we need more to maintain the ratio
-            // We want ARCHER_TO_CLERIC_RATIO archers for every 1 cleric (after the initial one)
-            // When militaryClerics is 0, we should build that many archers before the next cleric
-            const desiredArchers = (militaryClerics + 1) * ARCHER_TO_CLERIC_RATIO;
-            
-            if (militaryArchers < desiredArchers) {
-                const archerClass = Jobs['archer'];
-                return {
-                    job: 'archer',
-                    body: archerClass.BODY,
-                    cost: archerClass.COST
-                };
-            } else {
-                // Build a cleric to maintain the ratio
-                const clericClass = Jobs['cleric'];
-                return {
-                    job: 'cleric',
-                    body: clericClass.BODY,
-                    cost: clericClass.COST
-                };
-            }
-        }
-    }
-
-    // Check if there's a spawning creep that hasn't been added to memory yet
+    /**
+     * Check if there's a spawning creep that hasn't been added to memory yet.
+     * Delegates to BuildQueue.
+     */
     checkAndAddSpawningCreep() {
-        const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
-        
-        // If spawn is spawning a creep and we have a pending job
-        if (spawn && spawn.spawning && this.pendingSpawnJob) {
-            const creepId = spawn.spawning.creep.id;
-
-            if (creepId === undefined){
-                console.log("spawning creep undefined");
-                return;
-            }
-            
-            // Check if this creep is already in our controller
-            const alreadyAdded = this.screepController.creeps.some(c => c.id === creepId);
-            
-            if (!alreadyAdded) {
-                // Add the creep to memory with its job
-                this.screepController.addCreep(creepId, this.pendingSpawnJob, this.winObjective);
-                console.log(`Added spawning ${this.pendingSpawnJob} with id ${creepId} to memory`);
-            }
-            // Clear pending job once we've checked and processed it
-            this.pendingSpawnJob = null;
-        } else if (this.pendingSpawnJob && (!spawn || !spawn.spawning)) {
-            // Clear pending job if spawn is no longer spawning but we still have a pending job
-            this.pendingSpawnJob = null;
-        }
+        this.buildQueue.checkAndAddSpawningCreep(this.winObjective);
     }
 
-    // Attempt to spawn the next creep in the build order
+    /**
+     * Attempt to spawn the next creep in the build order.
+     * Coordinates between BuildStrategy to decide what to build,
+     * EnergyManager to check available resources, and BuildQueue to spawn.
+     * @returns {boolean} True if spawn was successful, false otherwise
+     */
     trySpawnNextCreep() {
-        const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
-        
-        // Check if spawn exists and is not currently spawning
-        if (!spawn || spawn.spawning) {
-            return false;
-        }
-
-        // Get the next creep to build
-        const nextCreep = this.getNextCreepToBuild();
+        // Get the next creep to build from strategy
+        const nextCreep = this.buildStrategy.getNextCreepToBuild(this.screepController.creeps);
         if (!nextCreep) {
             return false;
         }
 
-        // Check if we have enough energy
-        const totalEnergy = this.getTotalEnergy();
-        if (totalEnergy < nextCreep.cost) {
-            return false;
-        }
+        // Check available energy
+        const totalEnergy = this.energyManager.getTotalEnergy();
 
-        // Try to spawn the creep
-        const result = spawn.spawnCreep(nextCreep.body);
-        if (result && result.object && !result.error) {
-            // Mark the job as pending - we'll add it to memory once spawn.spawning is available
-            this.pendingSpawnJob = nextCreep.job;
-            console.log(`Started spawning ${nextCreep.job} (cost: ${nextCreep.cost}, available energy: ${totalEnergy})`);
-            return true;
-        }
-
-        return false;
+        // Try to spawn using the build queue
+        return this.buildQueue.trySpawn(nextCreep, totalEnergy);
     }
 }
