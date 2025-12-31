@@ -70,8 +70,8 @@ export class HaulerJob extends ActiveCreep {
                     this.gameState.setHasInitializedWinObjective();
                 }
                 return;
-            } else if (usedCapacity > 0) {
-                // Build the win objective
+            } else {
+                // Build the win objective (creep has energy)
                 const buildResult = creep.build(this.winObjective);
                 if (buildResult === ERR_NOT_IN_RANGE) {
                     creep.moveTo(this.winObjective);
