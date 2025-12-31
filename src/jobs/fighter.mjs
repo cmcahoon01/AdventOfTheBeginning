@@ -1,4 +1,4 @@
-import { getObjectById, getObjectsByPrototype } from 'game/utils';
+import { getObjectById } from 'game/utils';
 import { ATTACK, MOVE, ERR_NOT_IN_RANGE} from 'game/constants';
 import { Creep, StructureSpawn, StructureRampart } from 'game/prototypes';
 import { ActiveCreep } from './ActiveCreep.mjs';
