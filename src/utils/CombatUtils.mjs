@@ -71,6 +71,7 @@ export class CombatUtils {
         
         return false;
     }
+    
     /**
      * Find a safe rampart position to retreat to.
      * Returns the closest friendly rampart to the creep.

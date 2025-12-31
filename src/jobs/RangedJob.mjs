@@ -186,8 +186,6 @@ export class RangedJob extends ActiveCreep {
                         }
                     }
                     creep.rangedAttack(closestEnemy);
-                } else {
-                    console.log(`Creep ${creep.id} could not find a closest enemy despite enemies existing!`);
                 }
             } else {
                 // All enemies are on ramparts or no valid targets - idle
