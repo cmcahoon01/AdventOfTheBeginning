@@ -91,37 +91,33 @@ export class MinerJob extends ActiveCreep {
             const usedCapacity = creep.store[RESOURCE_ENERGY] || 0;
             
             // Alternate between mining and using resources
-            if (usedCapacity === 0) {
+            if (usedCapacity <= 10 * MinerJob.BODY.filter(part => part === WORK).length) {
                 // Mine from source
                 const harvestResult = creep.harvest(source);
                 if (harvestResult === ERR_NOT_IN_RANGE) {
                     console.log(`Miner ${this.id} not in range of source`);
-                }
-            } else {
-                // Use the resources based on current stage
-                if (MinerStateMachine.isStage1(this.memory)) {
-                    // Stage 1: Create and build extensions
-                    
-                    // Create construction sites if not already done
-                    if (!MinerStateMachine.extensionsCreated(this.memory)) {
-                        ExtensionBuilder.createExtensionSites(creep, source);
-                        MinerStateMachine.markExtensionsCreated(this.memory);
-                    }
-                    
-                    // Try to build nearby construction sites
-                    const isBuilding = ExtensionBuilder.buildNearbyConstructionSites(creep, this.gameState);
-                    
-                    if (!isBuilding) {
-                        // Check if all extensions nearby are built (construction is complete)
-                        if (ExtensionBuilder.areExtensionsComplete(creep, this.gameState)) {
-                            // All extensions are built, move to stage 2
-                            MinerStateMachine.transitionToStage2(this.memory);
-                            console.log(`Miner ${this.id} moving to stage 2`);
-                        }
-                    }
                 } else if (MinerStateMachine.isStage2(this.memory)) {
                     // Stage 2: Deposit to least full extension
                     ExtensionBuilder.fillExtensions(creep, RESOURCE_ENERGY, this.gameState);
+                }
+            } else if (MinerStateMachine.isStage1(this.memory)) {
+
+                // Create construction sites if not already done
+                if (!MinerStateMachine.extensionsCreated(this.memory)) {
+                    ExtensionBuilder.createExtensionSites(creep, source);
+                    MinerStateMachine.markExtensionsCreated(this.memory);
+                }
+
+                // Try to build nearby construction sites
+                const isBuilding = ExtensionBuilder.buildNearbyConstructionSites(creep, this.gameState);
+
+                if (!isBuilding) {
+                    // Check if all extensions nearby are built (construction is complete)
+                    if (ExtensionBuilder.areExtensionsComplete(creep, this.gameState)) {
+                        // All extensions are built, move to stage 2
+                        MinerStateMachine.transitionToStage2(this.memory);
+                        console.log(`Miner ${this.id} moving to stage 2`);
+                    }
                 }
             }
         }

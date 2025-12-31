@@ -50,18 +50,10 @@ export class CombatUtils {
         const thirdSize = mapSize / 3;
         
         // Determine which axis the spawns are separated on
-        // If enemy spawn is in top third (y < 33.33), enemy third is y < 33.33
-        // If enemy spawn is in bottom third (y > 66.67), enemy third is y > 66.67
         // If enemy spawn is in left third (x < 33.33), enemy third is x < 33.33
         // If enemy spawn is in right third (x > 66.67), enemy third is x > 66.67
         
-        if (enemySpawn.y < thirdSize) {
-            // Enemy is in top third
-            return pos.y < thirdSize;
-        } else if (enemySpawn.y > mapSize - thirdSize) {
-            // Enemy is in bottom third
-            return pos.y > mapSize - thirdSize;
-        } else if (enemySpawn.x < thirdSize) {
+        if (enemySpawn.x < thirdSize) {
             // Enemy is in left third
             return pos.x < thirdSize;
         } else if (enemySpawn.x > mapSize - thirdSize) {

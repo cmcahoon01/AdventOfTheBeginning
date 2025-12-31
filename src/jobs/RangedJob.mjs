@@ -57,19 +57,8 @@ export class RangedJob extends ActiveCreep {
                     creep.moveTo(mySpawn);
                 }
             } else {
-                // Idle in the center 2/3rds of the map
-                // Stay roughly where we are or move towards center line
-                const mapSize = MapTopology.ARENA_SIZE;
-                const centerPos = {
-                    x: mapSize / 2,
-                    y: mapSize / 2
-                };
-                
-                // Only move if we're far from center (to avoid constant movement)
-                const distToCenter = Math.abs(creep.x - centerPos.x) + Math.abs(creep.y - centerPos.y);
-                if (distToCenter > mapSize / 4) {
-                    creep.moveTo(centerPos);
-                }
+                // Move towards enemy spawn to stay active
+                creep.moveTo(enemySpawn);
             }
         }
     }
