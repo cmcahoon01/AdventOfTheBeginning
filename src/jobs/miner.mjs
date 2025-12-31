@@ -40,7 +40,10 @@ export class MinerJob extends ActiveCreep {
             if (assignedSource) {
                 MinerStateMachine.initialize(this.memory, minerCount, assignedSource);
             } else {
+                // No source available - mark as initialized to avoid repeated attempts
+                console.log(`Miner ${this.id} could not be assigned a source (index ${minerCount})`);
                 this.memory.initialized = true;
+                return; // Exit early - this miner cannot function
             }
         }
         

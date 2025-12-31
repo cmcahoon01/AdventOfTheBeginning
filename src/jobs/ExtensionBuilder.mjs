@@ -75,7 +75,7 @@ export class ExtensionBuilder {
         }
         
         if (created < EXTENSIONS_PER_MINER) {
-            console.log(`Miner could only create ${created} extension sites`);
+            console.log(`Could only create ${created} extension sites`);
         }
         
         return created;
@@ -100,7 +100,7 @@ export class ExtensionBuilder {
             if (target) {
                 const buildResult = creep.build(target);
                 if (buildResult === ERR_NOT_IN_RANGE) {
-                    console.log(`Miner not in range of construction site`);
+                    console.log(`Creep not in range of construction site`);
                 }
                 return true;
             }
@@ -128,6 +128,7 @@ export class ExtensionBuilder {
      * Fill extensions with energy.
      * Transfers energy to the least full extension nearby.
      * @param {Object} creep - The miner creep
+     * @param {string} resourceType - The resource type to transfer (e.g., RESOURCE_ENERGY)
      * @returns {boolean} True if transfer action was taken
      */
     static fillExtensions(creep, resourceType) {
@@ -157,7 +158,7 @@ export class ExtensionBuilder {
             if (leastFullExtension) {
                 const transferResult = creep.transfer(leastFullExtension, resourceType);
                 if (transferResult === ERR_NOT_IN_RANGE) {
-                    console.log(`Miner not in range of extension`);
+                    console.log(`Creep not in range of extension`);
                 }
                 return true;
             }
