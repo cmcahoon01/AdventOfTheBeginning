@@ -102,6 +102,14 @@ export class GameState {
     }
     
     /**
+     * Get friendly ramparts (ramparts that belong to us).
+     * @returns {StructureRampart[]}
+     */
+    getMyRamparts() {
+        return this.ramparts.filter(r => r.my);
+    }
+    
+    /**
      * Get all friendly extensions.
      * @returns {StructureExtension[]}
      */

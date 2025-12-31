@@ -181,7 +181,17 @@ export const CombatConfig = {
          * They can't deal damage and can be easily eliminated.
          */
         SUPPORT_HEAL: 1
-    }
+    },
+    
+    /**
+     * Defensive posture threshold.
+     * When myStrength/enemyStrength < 0.7, units should retreat to ramparts.
+     * 
+     * Rationale: At less than 70% of enemy strength, we have an appreciable
+     * disadvantage and should adopt defensive posture to protect units and
+     * leverage rampart defenses.
+     */
+    DEFENSIVE_THRESHOLD: 0.7
 };
 
 // ============================================================================

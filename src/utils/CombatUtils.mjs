@@ -1,7 +1,95 @@
+import { compareTeamStrengths } from '../combat/strengthEstimator.mjs';
+import { CombatConfig, MapTopology } from '../constants.mjs';
+
 /**
  * Utility functions for combat logic shared across multiple combat jobs.
  */
 export class CombatUtils {
+    /**
+     * Check if we should adopt defensive posture based on team strength.
+     * @param {GameState} gameState - The game state service
+     * @returns {boolean} True if we should retreat to defensive positions
+     */
+    static shouldAdoptDefensivePosture(gameState) {
+        const comparison = compareTeamStrengths(gameState);
+        
+        // Adopt defensive posture if our strength ratio is below threshold
+        // (i.e., we have appreciable disadvantage)
+        return comparison.ratio < CombatConfig.DEFENSIVE_THRESHOLD;
+    }
+    
+    /**
+     * Check if there are any valid enemy targets (not on ramparts or no enemies).
+     * @param {Creep[]} enemies - Array of enemy creeps
+     * @param {StructureRampart[]} ramparts - Array of rampart structures
+     * @returns {boolean} True if there are targetable enemies
+     */
+    static hasValidEnemyTargets(enemies, ramparts) {
+        if (enemies.length === 0) {
+            return false;
+        }
+        
+        // Check if any enemy is NOT on a rampart
+        const enemiesNotOnRamparts = this.filterMeleeTargetableEnemies(enemies, ramparts);
+        return enemiesNotOnRamparts.length > 0;
+    }
+    
+    /**
+     * Check if a position is in the enemy's third of the map.
+     * Enemy's third is closest to their spawn.
+     * @param {Object} pos - Position with x and y coordinates
+     * @param {StructureSpawn} enemySpawn - Enemy spawn structure
+     * @returns {boolean} True if position is in enemy's third
+     */
+    static isInEnemyThird(pos, enemySpawn) {
+        if (!enemySpawn) {
+            return false;
+        }
+        
+        const mapSize = MapTopology.ARENA_SIZE;
+        const thirdSize = mapSize / 3;
+        
+        // Determine which axis the spawns are separated on
+        // If enemy spawn is in top third (y < 33.33), enemy third is y < 33.33
+        // If enemy spawn is in bottom third (y > 66.67), enemy third is y > 66.67
+        // If enemy spawn is in left third (x < 33.33), enemy third is x < 33.33
+        // If enemy spawn is in right third (x > 66.67), enemy third is x > 66.67
+        
+        if (enemySpawn.y < thirdSize) {
+            // Enemy is in top third
+            return pos.y < thirdSize;
+        } else if (enemySpawn.y > mapSize - thirdSize) {
+            // Enemy is in bottom third
+            return pos.y > mapSize - thirdSize;
+        } else if (enemySpawn.x < thirdSize) {
+            // Enemy is in left third
+            return pos.x < thirdSize;
+        } else if (enemySpawn.x > mapSize - thirdSize) {
+            // Enemy is in right third
+            return pos.x > mapSize - thirdSize;
+        }
+        
+        return false;
+    }
+    /**
+     * Find a safe rampart position to retreat to.
+     * Prefers ramparts closer to our spawn.
+     * @param {Creep} creep - The creep looking for safety
+     * @param {GameState} gameState - The game state service
+     * @returns {StructureRampart|null} The rampart to retreat to, or null if none available
+     */
+    static findDefensiveRampartPosition(creep, gameState) {
+        const myRamparts = gameState.getMyRamparts();
+        
+        if (myRamparts.length === 0) {
+            return null;
+        }
+        
+        // Find the closest friendly rampart
+        const closestRampart = creep.findClosestByRange(myRamparts);
+        return closestRampart;
+    }
+    
     /**
      * Filter enemies by rampart status.
      * Separates enemies into those on ramparts and those not on ramparts.
