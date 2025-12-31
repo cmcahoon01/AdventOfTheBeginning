@@ -136,7 +136,7 @@ export class HaulerJob extends ActiveCreep {
                 }
                 
                 if (target) {
-                    this.tryBuildRoadToTarget(creep, target);
+                    // this.tryBuildRoadToTarget(creep, target);
                     
                     // Now move towards the target
                     // If target is winObjective, also try to build it
