@@ -38,12 +38,34 @@ export class TerrainAnalyzer {
 
     /**
      * Check if a position is blocked by a creep.
+     * For better performance with repeated checks, use buildCreepPositionMap() and hasCreepInMap().
      * @param {Object} pos - Position with x and y coordinates
      * @param {Array} allCreeps - Array of all creeps
      * @returns {boolean} True if position is blocked by a creep
      */
     static hasCreep(pos, allCreeps) {
         return allCreeps.some(c => c.x === pos.x && c.y === pos.y);
+    }
+    
+    /**
+     * Build a position lookup map for creeps for O(1) position checks.
+     * Use this when checking multiple positions against the same set of creeps.
+     * @param {Array} allCreeps - Array of all creeps
+     * @returns {Set<string>} Set of position keys in format "x,y"
+     */
+    static buildCreepPositionMap(allCreeps) {
+        return new Set(allCreeps.map(c => `${c.x},${c.y}`));
+    }
+    
+    /**
+     * Check if a position is blocked by a creep using a pre-built position map.
+     * This is O(1) vs O(n) for hasCreep().
+     * @param {Object} pos - Position with x and y coordinates
+     * @param {Set<string>} creepPositionMap - Position map from buildCreepPositionMap()
+     * @returns {boolean} True if position is blocked by a creep
+     */
+    static hasCreepInMap(pos, creepPositionMap) {
+        return creepPositionMap.has(`${pos.x},${pos.y}`);
     }
 
     /**

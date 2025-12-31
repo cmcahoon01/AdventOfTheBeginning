@@ -21,6 +21,13 @@ const ARCHER_TO_CLERIC_RATIO = 3;
  */
 export class BuildStrategy {
     /**
+     * @param {GameState} gameState - The game state service for cached game objects
+     */
+    constructor(gameState) {
+        this.gameState = gameState;
+    }
+    
+    /**
      * Get the next creep to build based on the current game state.
      * @param {Array} creeps - Array of active creeps
      * @returns {Object|null} Configuration object with job, body, and cost, or null if nothing to build
@@ -71,7 +78,7 @@ export class BuildStrategy {
         }
 
         // Phase 2: Adaptive build order based on team strength
-        const comparison = compareTeamStrengths();
+        const comparison = compareTeamStrengths(this.gameState);
         
         // Determine if we're stronger or roughly equal
         const isStrongerOrEqual = comparison.ratio >= STRENGTH_THRESHOLD;

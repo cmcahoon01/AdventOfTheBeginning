@@ -15,7 +15,7 @@ export class BuildOrder {
         // Initialize component managers
         this.energyManager = new EnergyManager(gameState);
         this.buildQueue = new BuildQueue(screepController, gameState);
-        this.buildStrategy = new BuildStrategy();
+        this.buildStrategy = new BuildStrategy(gameState);
     }
 
     /**

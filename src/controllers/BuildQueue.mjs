@@ -1,4 +1,3 @@
-import { getObjectsByPrototype } from 'game/utils';
 import { StructureSpawn } from 'game/prototypes';
 
 /**

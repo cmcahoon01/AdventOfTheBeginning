@@ -36,7 +36,7 @@ export class MinerJob extends ActiveCreep {
             ).length;
             
             // Assign source based on miner index
-            const assignedSource = SourceAssignmentStrategy.assignSourceToMiner(minerIndex);
+            const assignedSource = SourceAssignmentStrategy.assignSourceToMiner(minerIndex, this.gameState);
             if (assignedSource) {
                 MinerStateMachine.initialize(this.memory, minerIndex, assignedSource);
             } else {
@@ -59,7 +59,7 @@ export class MinerJob extends ActiveCreep {
             // Calculate target position if not already set
             let targetPos = MinerStateMachine.getTargetPosition(this.memory);
             if (!targetPos) {
-                const miningPos = SourceAssignmentStrategy.findMiningPosition(source);
+                const miningPos = SourceAssignmentStrategy.findMiningPosition(source, this.gameState);
                 if (miningPos) {
                     MinerStateMachine.setTargetPosition(this.memory, miningPos);
                     targetPos = miningPos;
@@ -103,11 +103,11 @@ export class MinerJob extends ActiveCreep {
                     }
                     
                     // Try to build nearby construction sites
-                    const isBuilding = ExtensionBuilder.buildNearbyConstructionSites(creep);
+                    const isBuilding = ExtensionBuilder.buildNearbyConstructionSites(creep, this.gameState);
                     
                     if (!isBuilding) {
                         // Check if all extensions nearby are built (construction is complete)
-                        if (ExtensionBuilder.areExtensionsComplete(creep)) {
+                        if (ExtensionBuilder.areExtensionsComplete(creep, this.gameState)) {
                             // All extensions are built, move to stage 2
                             MinerStateMachine.transitionToStage2(this.memory);
                             console.log(`Miner ${this.id} moving to stage 2`);
@@ -115,7 +115,7 @@ export class MinerJob extends ActiveCreep {
                     }
                 } else if (MinerStateMachine.isStage2(this.memory)) {
                     // Stage 2: Deposit to least full extension
-                    ExtensionBuilder.fillExtensions(creep, RESOURCE_ENERGY);
+                    ExtensionBuilder.fillExtensions(creep, RESOURCE_ENERGY, this.gameState);
                 }
             }
         }
