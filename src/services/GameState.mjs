@@ -26,6 +26,7 @@ export class GameState {
         this.myConstructionSites = [];
         this.fortifiedMiner = null; // Cached detection of enemy miner on rampart near corner
         this.hasBuiltMiner = false;
+        this.hasInitializedWinObjective = false; // Flag to track if initial win objective transfer has been performed
     }
     
     /**
@@ -158,5 +159,20 @@ export class GameState {
      */
     getHasBuiltMiner() {
         return this.hasBuiltMiner;
+    }
+
+    /**
+     * Get whether the win objective has been initialized with initial transfer.
+     * @return {boolean} True if initial win objective transfer has been performed, false otherwise
+     */
+    getHasInitializedWinObjective() {
+        return this.hasInitializedWinObjective;
+    }
+
+    /**
+     * Set the flag indicating that the initial win objective transfer has been performed.
+     */
+    setHasInitializedWinObjective() {
+        this.hasInitializedWinObjective = true;
     }
 }

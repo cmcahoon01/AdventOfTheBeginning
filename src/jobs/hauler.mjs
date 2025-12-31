@@ -1,5 +1,5 @@
 import {getObjectById} from 'game/utils';
-import {WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY} from 'game/constants';
+import {WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY, OK} from 'game/constants';
 import {ActiveCreep} from './ActiveCreep.mjs';
 import {BodyPartCalculator, MapTopology} from '../constants.mjs';
 import {CombatUtils} from '../services/CombatUtils.mjs';
@@ -41,6 +41,36 @@ export class HaulerJob extends ActiveCreep {
         if (inDefensiveMode) {
             // Haulers don't attack, just stay on ramparts
             return;
+        }
+
+        // === INITIAL WIN OBJECTIVE TRANSFER ===
+        // If the win objective exists, has 0 progress, and hasn't been initialized yet,
+        // withdraw from spawn and build the win objective once
+        if (this.winObjective && 
+            this.winObjective.progress === 0 && 
+            !this.gameState.getHasInitializedWinObjective()) {
+            
+            const spawn = this.gameState.getMySpawn();
+            const usedCapacity = creep.store[RESOURCE_ENERGY] || 0;
+            
+            if (spawn && usedCapacity === 0) {
+                // Withdraw from spawn
+                const withdrawResult = creep.withdraw(spawn, RESOURCE_ENERGY);
+                if (withdrawResult === ERR_NOT_IN_RANGE) {
+                    creep.moveTo(spawn);
+                }
+                return;
+            } else if (usedCapacity > 0) {
+                // Build the win objective
+                const buildResult = creep.build(this.winObjective);
+                if (buildResult === ERR_NOT_IN_RANGE) {
+                    creep.moveTo(this.winObjective);
+                } else if (buildResult === OK) {
+                    // Successfully built, set the flag
+                    this.gameState.setHasInitializedWinObjective();
+                }
+                return;
+            }
         }
 
         // Initialize state if not set
