@@ -4,13 +4,18 @@ import { CARRY, MOVE, WORK, ERR_NOT_IN_RANGE } from 'game/constants';
 import { RESOURCE_ENERGY } from 'game';
 import { ScreepController } from './src/controllers/ScreepController.mjs';
 import { BuildOrder } from './src/controllers/BuildOrder.mjs';
+import { GameState } from './src/services/GameState.mjs';
 
 const spawn = getObjectsByPrototype(StructureSpawn).find(i => i.my);
 const winObjective = getObjectsByPrototype(ConstructionSite).find(i => i.my);
+const gameState = new GameState();
 const screepController = new ScreepController();
-const buildOrder = new BuildOrder(screepController, winObjective);
+const buildOrder = new BuildOrder(screepController, winObjective, gameState);
 
 export function loop() {
+    // Refresh game state cache once per tick
+    gameState.refresh();
+
     // Check if there's a spawning creep that needs to be added to memory
     buildOrder.checkAndAddSpawningCreep();
 
@@ -18,5 +23,5 @@ export function loop() {
     buildOrder.trySpawnNextCreep();
 
     // Use the controller to update all creeps
-    screepController.updateCreeps(winObjective);
+    screepController.updateCreeps(winObjective, gameState);
 }

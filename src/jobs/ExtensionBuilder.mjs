@@ -2,6 +2,7 @@ import { getObjectsByPrototype, getRange, getTerrainAt } from 'game/utils';
 import { StructureExtension, ConstructionSite } from 'game/prototypes';
 import { TERRAIN_WALL, ERR_NOT_IN_RANGE } from 'game/constants';
 import { createConstructionSite } from 'game';
+import { isAdjacent } from '../utils/RangeUtils.mjs';
 
 // Number of extensions each miner should create
 export const EXTENSIONS_PER_MINER = 5;
@@ -89,9 +90,8 @@ export class ExtensionBuilder {
     static buildNearbyConstructionSites(creep) {
         const allConstructionSites = getObjectsByPrototype(ConstructionSite).filter(c => c.my);
         const nearbyConstructionSites = allConstructionSites.filter(site => {
-            const range = getRange(creep, site);
             // Only consider construction sites within 1 tile (the 8 surrounding tiles)
-            return range <= 1;
+            return isAdjacent(creep, site);
         });
         
         if (nearbyConstructionSites.length > 0) {
@@ -116,10 +116,7 @@ export class ExtensionBuilder {
      */
     static areExtensionsComplete(creep) {
         const allExtensions = getObjectsByPrototype(StructureExtension).filter(e => e.my);
-        const nearbyExtensions = allExtensions.filter(ext => {
-            const range = getRange(creep, ext);
-            return range <= 1;
-        });
+        const nearbyExtensions = allExtensions.filter(ext => isAdjacent(creep, ext));
         
         return nearbyExtensions.length >= EXTENSIONS_PER_MINER;
     }
@@ -134,10 +131,7 @@ export class ExtensionBuilder {
     static fillExtensions(creep, resourceType) {
         // Find all extensions around the miner
         const allExtensions = getObjectsByPrototype(StructureExtension).filter(e => e.my);
-        const nearbyExtensions = allExtensions.filter(ext => {
-            const range = getRange(creep, ext);
-            return range <= 1; // Only extensions immediately adjacent
-        });
+        const nearbyExtensions = allExtensions.filter(ext => isAdjacent(creep, ext));
         
         if (nearbyExtensions.length > 0) {
             // Find the least full extension

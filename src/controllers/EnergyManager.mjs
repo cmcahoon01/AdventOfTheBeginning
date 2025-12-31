@@ -8,6 +8,13 @@ import { RESOURCE_ENERGY } from 'game/constants';
  */
 export class EnergyManager {
     /**
+     * @param {GameState} gameState - The game state service for cached game objects
+     */
+    constructor(gameState) {
+        this.gameState = gameState;
+    }
+
+    /**
      * Calculate total available energy from spawn and all extensions.
      * @returns {number} Total energy available across all energy-storing structures
      */
@@ -15,7 +22,7 @@ export class EnergyManager {
         let totalEnergy = 0;
 
         // Get energy from spawn
-        const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
+        const spawn = this.gameState.getMySpawn();
         if (spawn && spawn.store) {
             totalEnergy += spawn.store[RESOURCE_ENERGY] || 0;
         }

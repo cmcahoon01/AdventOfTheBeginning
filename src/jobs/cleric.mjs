@@ -1,6 +1,7 @@
 import { getObjectById, getRange } from 'game/utils';
 import { RANGED_ATTACK, HEAL, MOVE } from 'game/constants';
 import { RangedJob } from './RangedJob.mjs';
+import { isInHealRange, isInRangedHealRange } from '../utils/RangeUtils.mjs';
 
 // Cleric job - ranged combat with healing abilities
 export class ClericJob extends RangedJob {
@@ -35,9 +36,9 @@ export class ClericJob extends RangedJob {
                 const range = getRange(creep, closestDamagedAlly);
                 
                 // Healing is more effective at close range
-                if (range <= 1) {
+                if (isInHealRange(creep, closestDamagedAlly)) {
                     creep.heal(closestDamagedAlly);
-                } else if (range <= 3) {
+                } else if (isInRangedHealRange(creep, closestDamagedAlly)) {
                     creep.rangedHeal(closestDamagedAlly);
                 }
             }

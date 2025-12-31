@@ -8,19 +8,19 @@ export class ScreepController {
     }
 
     // Add a new creep to the controller
-    addCreep(id, jobName, winObjective) {
+    addCreep(id, jobName, winObjective, gameState) {
         if (!Jobs[jobName]) {
             console.log(`Warning: Unknown job type '${jobName}'`);
             return;
         }
         const JobClass = Jobs[jobName];
-        const activeCreep = new JobClass(id, jobName, this, winObjective);
+        const activeCreep = new JobClass(id, jobName, this, winObjective, gameState);
         this.creeps.push(activeCreep);
         console.log(`Added creep ${id} with job ${jobName}`);
     }
 
     // Update all creeps - remove dead ones and call actions for alive ones
-    updateCreeps(winObjective) {
+    updateCreeps(winObjective, gameState) {
         // Filter out dead creeps and keep alive ones
         this.creeps = this.creeps.filter(activeCreep => {
             const creep = getObjectById(activeCreep.id);

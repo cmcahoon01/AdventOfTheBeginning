@@ -6,8 +6,9 @@ import { StructureSpawn } from 'game/prototypes';
  * Handles the coordination between spawn requests and creep memory addition.
  */
 export class BuildQueue {
-    constructor(screepController) {
+    constructor(screepController, gameState) {
         this.screepController = screepController;
+        this.gameState = gameState;
         // Track the job type of the creep currently being spawned
         this.pendingSpawnJob = null;
     }
@@ -18,7 +19,7 @@ export class BuildQueue {
      * @param {Object} winObjective - The win objective to pass to new creeps
      */
     checkAndAddSpawningCreep(winObjective) {
-        const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
+        const spawn = this.gameState.getMySpawn();
         
         // If spawn is spawning a creep and we have a pending job
         if (spawn && spawn.spawning && this.pendingSpawnJob) {
@@ -34,7 +35,7 @@ export class BuildQueue {
             
             if (!alreadyAdded) {
                 // Add the creep to memory with its job
-                this.screepController.addCreep(creepId, this.pendingSpawnJob, winObjective);
+                this.screepController.addCreep(creepId, this.pendingSpawnJob, winObjective, this.gameState);
                 console.log(`Added spawning ${this.pendingSpawnJob} with id ${creepId} to memory`);
             }
             // Clear pending job once we've checked and processed it
@@ -52,7 +53,7 @@ export class BuildQueue {
      * @returns {boolean} True if spawn was successful, false otherwise
      */
     trySpawn(nextCreep, availableEnergy) {
-        const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
+        const spawn = this.gameState.getMySpawn();
         
         // Check if spawn exists and is not currently spawning
         if (!spawn || spawn.spawning) {

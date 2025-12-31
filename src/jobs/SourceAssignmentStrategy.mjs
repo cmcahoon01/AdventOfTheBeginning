@@ -1,5 +1,6 @@
 import { getObjectsByPrototype } from 'game/utils';
 import { Source, StructureSpawn } from 'game/prototypes';
+import { TerrainAnalyzer } from '../combat/TerrainAnalyzer.mjs';
 
 /**
  * Handles source selection logic for miners.
@@ -109,7 +110,7 @@ export class SourceAssignmentStrategy {
         // Try preferred directions first
         for (const dir of preferredDirections) {
             const pos = { x: source.x + dir.dx, y: source.y + dir.dy };
-            if (pos.x >= 0 && pos.x < 100 && pos.y >= 0 && pos.y < 100) {
+            if (TerrainAnalyzer.isValidPosition(pos)) {
                 return pos;
             }
         }
@@ -117,7 +118,7 @@ export class SourceAssignmentStrategy {
         // Fallback to any cardinal direction
         for (const dir of directions) {
             const pos = { x: source.x + dir.dx, y: source.y + dir.dy };
-            if (pos.x >= 0 && pos.x < 100 && pos.y >= 0 && pos.y < 100) {
+            if (TerrainAnalyzer.isValidPosition(pos)) {
                 return pos;
             }
         }
