@@ -1,11 +1,12 @@
-import { getObjectById, getObjectsByPrototype, getRange, getTerrainAt } from 'game/utils';
-import { WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY, TERRAIN_WALL } from 'game/constants';
-import { Source, StructureSpawn, StructureExtension, ConstructionSite } from 'game/prototypes';
-import { createConstructionSite } from 'game';
+import { getObjectById } from 'game/utils';
+import { WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY } from 'game/constants';
 import { ActiveCreep } from './ActiveCreep.mjs';
+import { SourceAssignmentStrategy } from './SourceAssignmentStrategy.mjs';
+import { ExtensionBuilder, EXTENSIONS_PER_MINER } from './ExtensionBuilder.mjs';
+import { MinerStateMachine } from './MinerStateMachine.mjs';
 
-// Number of extensions each miner should create and fill
-export const EXTENSIONS_PER_MINER = 5;
+// Re-export for backward compatibility
+export { EXTENSIONS_PER_MINER };
 
 // Miner job - dedicated resource extraction and extension building
 export class MinerJob extends ActiveCreep {
@@ -19,149 +20,6 @@ export class MinerJob extends ActiveCreep {
 
     static get JOB_NAME() {
         return 'miner';
-    }
-
-    // Helper function to find sources sorted by position (top to bottom)
-    findSortedSources() {
-        const sources = getObjectsByPrototype(Source);
-        // Sort by y coordinate (top to bottom)
-        return sources.sort((a, b) => a.y - b.y);
-    }
-
-    // Helper function to determine which team side we're on
-    getTeamSide() {
-        const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
-        if (!spawn) return 'left';
-        
-        // Assuming the map is 100x100, if spawn.x < 50, we're on the left
-        return spawn.x < 50 ? 'left' : 'right';
-    }
-
-    // Helper function to assign source to a miner based on miner count
-    assignSourceToMiner(minerIndex) {
-        const sources = this.findSortedSources();
-        const teamSide = this.getTeamSide();
-        
-        if (sources.length < 2) {
-            return null; // Not enough sources
-        }
-        
-        // First miner gets top source (corner source based on team side)
-        if (minerIndex === 0) {
-            // Filter to corner sources (top)
-            const topSources = sources.filter(s => s.y < 30);
-            if (teamSide === 'left') {
-                // Get the leftmost top source
-                return topSources.sort((a, b) => a.x - b.x)[0];
-            } else {
-                // Get the rightmost top source
-                return topSources.sort((a, b) => b.x - a.x)[0];
-            }
-        }
-        
-        // Second miner gets bottom source
-        if (minerIndex === 1) {
-            const bottomSources = sources.filter(s => s.y > 70);
-            if (teamSide === 'left') {
-                // Get the leftmost bottom source
-                return bottomSources.sort((a, b) => a.x - b.x)[0];
-            } else {
-                // Get the rightmost bottom source
-                return bottomSources.sort((a, b) => b.x - a.x)[0];
-            }
-        }
-        
-        return null;
-    }
-
-    // Helper function to find the position directly adjacent to the source (not diagonal)
-    // The source is in a wall, so we look for the one non-wall position directly adjacent
-    findMiningPosition(source) {
-        const teamSide = this.getTeamSide();
-        
-        // The mining position should be the one facing towards the center/spawn
-        // For corner sources, this is typically towards the center of the map
-        const directions = [
-            { dx: 0, dy: -1 }, // TOP
-            { dx: 1, dy: 0 },  // RIGHT
-            { dx: 0, dy: 1 },  // BOTTOM
-            { dx: -1, dy: 0 }  // LEFT
-        ];
-        
-        // Determine the best direction based on source position
-        // If source is in top left corner (x < 50, y < 50), we want RIGHT or BOTTOM
-        // If source is in top right corner (x > 50, y < 50), we want LEFT or BOTTOM
-        // If source is in bottom left corner (x < 50, y > 50), we want RIGHT or TOP
-        // If source is in bottom right corner (x > 50, y > 50), we want LEFT or TOP
-        
-        let preferredDirections = [];
-        if (source.y < 50) {
-            // Top half
-            if (teamSide === 'left') {
-                preferredDirections = [{ dx: 1, dy: 0 }, { dx: 0, dy: 1 }]; // RIGHT, BOTTOM
-            } else {
-                preferredDirections = [{ dx: -1, dy: 0 }, { dx: 0, dy: 1 }]; // LEFT, BOTTOM
-            }
-        } else {
-            // Bottom half
-            if (teamSide === 'left') {
-                preferredDirections = [{ dx: 1, dy: 0 }, { dx: 0, dy: -1 }]; // RIGHT, TOP
-            } else {
-                preferredDirections = [{ dx: -1, dy: 0 }, { dx: 0, dy: -1 }]; // LEFT, TOP
-            }
-        }
-        
-        // Try preferred directions first
-        for (const dir of preferredDirections) {
-            const pos = { x: source.x + dir.dx, y: source.y + dir.dy };
-            if (pos.x >= 0 && pos.x < 100 && pos.y >= 0 && pos.y < 100) {
-                return pos;
-            }
-        }
-        
-        // Fallback to any cardinal direction
-        for (const dir of directions) {
-            const pos = { x: source.x + dir.dx, y: source.y + dir.dy };
-            if (pos.x >= 0 && pos.x < 100 && pos.y >= 0 && pos.y < 100) {
-                return pos;
-            }
-        }
-        
-        return null;
-    }
-
-    // Helper function to get positions around the creep for extensions
-    // Returns only the empty spaces (not the source or walls)
-    getExtensionPositions(creep, source) {
-        const positions = [];
-        const offsets = [
-            { dx: 0, dy: -1 }, // TOP
-            { dx: 1, dy: -1 }, // TOP_RIGHT
-            { dx: 1, dy: 0 },  // RIGHT
-            { dx: 1, dy: 1 },  // BOTTOM_RIGHT
-            { dx: 0, dy: 1 },  // BOTTOM
-            { dx: -1, dy: 1 }, // BOTTOM_LEFT
-            { dx: -1, dy: 0 }, // LEFT
-            { dx: -1, dy: -1 } // TOP_LEFT
-        ];
-        
-        for (const offset of offsets) {
-            const pos = { x: creep.x + offset.dx, y: creep.y + offset.dy };
-            
-            // Skip if out of bounds
-            if (pos.x < 0 || pos.x >= 100 || pos.y < 0 || pos.y >= 100) {
-                continue;
-            }
-            
-            // Skip if this is the source position
-            if (source && pos.x === source.x && pos.y === source.y) {
-                continue;
-            }
-            
-            positions.push(pos);
-        }
-        
-        return positions;
     }
 
     act() {
@@ -178,16 +36,12 @@ export class MinerJob extends ActiveCreep {
             ).length;
             
             // Assign source based on miner index
-            const assignedSource = this.assignSourceToMiner(minerCount);
+            const assignedSource = SourceAssignmentStrategy.assignSourceToMiner(minerCount);
             if (assignedSource) {
-                this.memory.sourceId = assignedSource.id;
-                this.memory.targetX = null;
-                this.memory.targetY = null;
-                this.memory.state = 'moving_to_position';
-                this.memory.stage = 1; // Stage 1: building extensions
-                this.memory.extensionsCreated = false;
+                MinerStateMachine.initialize(this.memory, minerCount, assignedSource);
+            } else {
+                this.memory.initialized = true;
             }
-            this.memory.initialized = true;
         }
         
         // Get the assigned source
@@ -198,24 +52,23 @@ export class MinerJob extends ActiveCreep {
         }
         
         // State: Moving to mining position
-        if (this.memory.state === 'moving_to_position') {
+        if (MinerStateMachine.isMovingToPosition(this.memory)) {
             // Calculate target position if not already set
-            if (this.memory.targetX === null || this.memory.targetY === null) {
-                const miningPos = this.findMiningPosition(source);
+            let targetPos = MinerStateMachine.getTargetPosition(this.memory);
+            if (!targetPos) {
+                const miningPos = SourceAssignmentStrategy.findMiningPosition(source);
                 if (miningPos) {
-                    this.memory.targetX = miningPos.x;
-                    this.memory.targetY = miningPos.y;
+                    MinerStateMachine.setTargetPosition(this.memory, miningPos);
+                    targetPos = miningPos;
                 } else {
                     console.log(`Miner ${this.id} couldn't find mining position`);
                     return;
                 }
             }
             
-            const targetPos = { x: this.memory.targetX, y: this.memory.targetY };
-            
             // Check if we've arrived
-            if (creep.x === targetPos.x && creep.y === targetPos.y) {
-                this.memory.state = 'mining';
+            if (MinerStateMachine.isAtTargetPosition(creep, this.memory)) {
+                MinerStateMachine.transitionToMining(this.memory);
                 console.log(`Miner ${this.id} arrived at mining position`);
             } else {
                 // Move to the target position
@@ -225,7 +78,7 @@ export class MinerJob extends ActiveCreep {
         }
         
         // State: Mining and working
-        if (this.memory.state === 'mining') {
+        if (MinerStateMachine.isMining(this.memory)) {
             const usedCapacity = creep.store[RESOURCE_ENERGY] || 0;
             
             // Alternate between mining and using resources
@@ -237,109 +90,29 @@ export class MinerJob extends ActiveCreep {
                 }
             } else {
                 // Use the resources based on current stage
-                if (this.memory.stage === 1) {
+                if (MinerStateMachine.isStage1(this.memory)) {
                     // Stage 1: Create and build extensions
                     
                     // Create construction sites if not already done
-                    if (!this.memory.extensionsCreated) {
-                        const extensionPositions = this.getExtensionPositions(creep, source);
-                        
-                        // Create construction sites (limit to EXTENSIONS_PER_MINER)
-                        let created = 0;
-                        for (const pos of extensionPositions) {
-                            if (created >= EXTENSIONS_PER_MINER) break;
-                            if (getTerrainAt(pos) === TERRAIN_WALL) continue;
-                            
-                            const result = createConstructionSite(pos, StructureExtension);
-                            if (result.object) {
-                                created++;
-                            } else {
-                                console.log("failed to create an extension site:");
-                                console.log(result);
-                            }
-                        }
-                        if (created < EXTENSIONS_PER_MINER) {
-                            console.log(`Miner ${this.id} could only create ${created} extension sites`);
-                        }
-
-                        // const extensionPosition = {x: creep.x, y: creep.y-1};
-                        // const result = createConstructionSite(extensionPosition, StructureExtension);
-                        // if (result.object) {
-                        //     console.log("created a extension site at: " + result.object.x + ", " + result.object.y);
-                        // } else {
-                        //     console.log("failed to create an extension site:");
-                        //     console.log(result);
-                        // }
-                        
-                        this.memory.extensionsCreated = true;
+                    if (!MinerStateMachine.extensionsCreated(this.memory)) {
+                        ExtensionBuilder.createExtensionSites(creep, source);
+                        MinerStateMachine.markExtensionsCreated(this.memory);
                     }
                     
-                    // Find construction sites around the miner
-                    const allConstructionSites = getObjectsByPrototype(ConstructionSite).filter(c => c.my);
-                    const nearbyConstructionSites = allConstructionSites.filter(site => {
-                        const range = getRange(creep, site);
-                        // Only consider construction sites within 1 tile (the 8 surrounding tiles)
-                        return range <= 1;
-                    });
+                    // Try to build nearby construction sites
+                    const isBuilding = ExtensionBuilder.buildNearbyConstructionSites(creep);
                     
-                    if (nearbyConstructionSites.length > 0) {
-                        // Build the nearest construction site
-                        const target = creep.findClosestByRange(nearbyConstructionSites);
-                        if (target) {
-                            const buildResult = creep.build(target);
-                            if (buildResult === ERR_NOT_IN_RANGE) {
-                                console.log(`Miner ${this.id} not in range of construction site`);
-                            }
-                        }
-                    } else {
+                    if (!isBuilding) {
                         // Check if all extensions nearby are built (construction is complete)
-                        const allExtensions = getObjectsByPrototype(StructureExtension).filter(e => e.my);
-                        const nearbyExtensions = allExtensions.filter(ext => {
-                            const range = getRange(creep, ext);
-                            return range <= 1;
-                        });
-                        
-                        if (nearbyExtensions.length >= EXTENSIONS_PER_MINER) {
+                        if (ExtensionBuilder.areExtensionsComplete(creep)) {
                             // All extensions are built, move to stage 2
-                            this.memory.stage = 2;
-                            console.log(`Miner ${this.id} moving to stage 2 with ${nearbyExtensions.length} extensions`);
-                        } else {
-                            // console.log("extensions or sites not found");
+                            MinerStateMachine.transitionToStage2(this.memory);
+                            console.log(`Miner ${this.id} moving to stage 2`);
                         }
                     }
-                } else if (this.memory.stage === 2) {
+                } else if (MinerStateMachine.isStage2(this.memory)) {
                     // Stage 2: Deposit to least full extension
-                    
-                    // Find all extensions around the miner
-                    const allExtensions = getObjectsByPrototype(StructureExtension).filter(e => e.my);
-                    const nearbyExtensions = allExtensions.filter(ext => {
-                        const range = getRange(creep, ext);
-                        return range <= 1; // Only extensions immediately adjacent
-                    });
-                    
-                    if (nearbyExtensions.length > 0) {
-                        // Find the least full extension
-                        let leastFullExtension = null;
-                        let minEnergy = Infinity;
-                        
-                        for (const ext of nearbyExtensions) {
-                            const energy = ext.store[RESOURCE_ENERGY] || 0;
-                            const capacity = ext.store.getCapacity(RESOURCE_ENERGY);
-                            
-                            // Only consider extensions that are not full
-                            if (energy < capacity && energy < minEnergy) {
-                                minEnergy = energy;
-                                leastFullExtension = ext;
-                            }
-                        }
-                        
-                        if (leastFullExtension) {
-                            const transferResult = creep.transfer(leastFullExtension, RESOURCE_ENERGY);
-                            if (transferResult === ERR_NOT_IN_RANGE) {
-                                console.log(`Miner ${this.id} not in range of extension`);
-                            }
-                        }
-                    }
+                    ExtensionBuilder.fillExtensions(creep, RESOURCE_ENERGY);
                 }
             }
         }
