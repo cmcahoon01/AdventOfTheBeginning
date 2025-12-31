@@ -100,7 +100,7 @@ export class ExtensionBuilder {
             if (target) {
                 const buildResult = creep.build(target);
                 if (buildResult === ERR_NOT_IN_RANGE) {
-                    console.log(`Creep not in range of construction site`);
+                    console.log(`Creep ${creep.id} not in range of construction site`);
                 }
                 return true;
             }
@@ -158,7 +158,7 @@ export class ExtensionBuilder {
             if (leastFullExtension) {
                 const transferResult = creep.transfer(leastFullExtension, resourceType);
                 if (transferResult === ERR_NOT_IN_RANGE) {
-                    console.log(`Creep not in range of extension`);
+                    console.log(`Creep ${creep.id} not in range of extension`);
                 }
                 return true;
             }
