@@ -1,6 +1,7 @@
 declare module "game/prototypes" {
     export {Creep} from "game/prototypes/creep";
     export {GameObject} from "game/prototypes/game-object";
+    export {AreaEffect} from "season_1/construct_and_control/basic/prototypes/area-effect";
     export {Structure} from "game/prototypes/structure";
     export {OwnedStructure} from "game/prototypes/owned-structure";
     export {StructureTower} from "game/prototypes/tower";

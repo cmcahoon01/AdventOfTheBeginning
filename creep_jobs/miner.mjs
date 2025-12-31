@@ -5,7 +5,7 @@ import { createConstructionSite } from 'game';
 import { ActiveCreep } from './ActiveCreep.mjs';
 
 // Number of extensions each miner should create and fill
-export const EXTENSIONS_PER_MINER = 3;
+export const EXTENSIONS_PER_MINER = 5;
 
 // Miner job - dedicated resource extraction and extension building
 export class MinerJob extends ActiveCreep {
@@ -242,32 +242,34 @@ export class MinerJob extends ActiveCreep {
                     
                     // Create construction sites if not already done
                     if (!this.memory.extensionsCreated) {
-                        // const extensionPositions = getExtensionPositions(creep, source);
+                        const extensionPositions = this.getExtensionPositions(creep, source);
                         
-                        // // Create construction sites (limit to EXTENSIONS_PER_MINER)
-                        // let created = 0;
-                        // for (const pos of extensionPositions) {
-                        //     if (created >= EXTENSIONS_PER_MINER) break;
-                        //     if (getTerrainAt(pos) == TERRAIN_WALL) continue;
+                        // Create construction sites (limit to EXTENSIONS_PER_MINER)
+                        let created = 0;
+                        for (const pos of extensionPositions) {
+                            if (created >= EXTENSIONS_PER_MINER) break;
+                            if (getTerrainAt(pos) === TERRAIN_WALL) continue;
                             
-                        //     const result = createConstructionSite(pos, StructureExtension);
-                        //     if (result.object) {
-                        //         created++;
-                        //         console.log("created a extension site at: " + result.object.x + ", " + result.object.y);
-                        //     } else {
-                        //         console.log("failed to create an extension site:");
-                        //         console.log(result);
-                        //     }
-                        // }
-
-                        const extensionPosition = {x: creep.x, y: creep.y-1};
-                        const result = createConstructionSite(extensionPosition, StructureExtension);
-                        if (result.object) {
-                            console.log("created a extension site at: " + result.object.x + ", " + result.object.y);
-                        } else {
-                            console.log("failed to create an extension site:");
-                            console.log(result);
+                            const result = createConstructionSite(pos, StructureExtension);
+                            if (result.object) {
+                                created++;
+                            } else {
+                                console.log("failed to create an extension site:");
+                                console.log(result);
+                            }
                         }
+                        if (created < EXTENSIONS_PER_MINER) {
+                            console.log(`Miner ${this.id} could only create ${created} extension sites`);
+                        }
+
+                        // const extensionPosition = {x: creep.x, y: creep.y-1};
+                        // const result = createConstructionSite(extensionPosition, StructureExtension);
+                        // if (result.object) {
+                        //     console.log("created a extension site at: " + result.object.x + ", " + result.object.y);
+                        // } else {
+                        //     console.log("failed to create an extension site:");
+                        //     console.log(result);
+                        // }
                         
                         this.memory.extensionsCreated = true;
                     }

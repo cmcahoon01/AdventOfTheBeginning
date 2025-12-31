@@ -1,6 +1,6 @@
 import { getObjectById, getObjectsByPrototype, findPath, getTerrainAt } from 'game/utils';
 import { WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY } from 'game/constants';
-import { Source, StructureSpawn, StructureRoad, ConstructionSite } from 'game/prototypes';
+import { Source, StructureSpawn, StructureRoad, ConstructionSite, StructureExtension } from 'game/prototypes';
 import { createConstructionSite } from 'game';
 import { ActiveCreep } from './ActiveCreep.mjs';
 
@@ -41,6 +41,37 @@ export class HaulerJob extends ActiveCreep {
             if (transferResult === ERR_NOT_IN_RANGE) {
                 creep.moveTo(spawn);
             }
+        }
+    }
+
+    // Helper function to try building a road to the target
+    tryBuildRoadToTarget(creep, target) {
+        const constructionSites = getObjectsByPrototype(ConstructionSite);
+        const roadConstructionSites = constructionSites.filter(site =>
+            site.structure instanceof StructureRoad);
+        const roadUnder = roadConstructionSites.find(site =>
+                Math.max(Math.abs(site.x-creep.x), Math.abs(site.y-creep.y)) <= 1);
+        if (roadUnder && creep.store[RESOURCE_ENERGY] >= 10){
+            creep.build(roadUnder);
+        }
+        if (creep.store[RESOURCE_ENERGY] >= 5) {
+            // Get the next position we'll move to
+            const nextPos = this.getNextMovePosition(creep, target);
+
+            if (nextPos && creep.store[RESOURCE_ENERGY] >= 5) {
+                const roads =  getObjectsByPrototype(StructureRoad);
+                const roadThereAlready = roads.find(site =>
+                    site.x === nextPos.x && site.y === nextPos.y);
+                const siteThereAlready = roadConstructionSites.find(site =>
+                    site.x === nextPos.x && site.y === nextPos.y);
+                if (!roadThereAlready && !siteThereAlready && constructionSites.length < MAX_ROAD_CONSTRUCTION){
+                    createConstructionSite(nextPos, StructureRoad);
+                }
+            }
+        }
+
+        if (creep.store[RESOURCE_ENERGY] <= 5) {
+            this.memory.state = 'mining';
         }
     }
 
@@ -92,9 +123,12 @@ export class HaulerJob extends ActiveCreep {
             }
 
             // Check if there are any miner creeps by accessing the controller
-            const hasMinerCreeps = this.controller.creeps.some(c => c.jobName === 'miner');
+            // const hasMinerCreeps = this.controller.creeps.some(c => c.jobName === 'miner');
 
-            if (hasMinerCreeps) {
+            const extensions = getObjectsByPrototype(StructureExtension);
+            const hasBuiltExtensions = extensions.some(ext => ext.my);
+
+            if (hasBuiltExtensions) {
                 // Determine the target (either winObjective or spawn)
                 let target = this.winObjective;
                 if (!target) {
@@ -102,34 +136,7 @@ export class HaulerJob extends ActiveCreep {
                 }
                 
                 if (target) {
-                    const constructionSites = getObjectsByPrototype(ConstructionSite);
-                    const roadConstructionSites = constructionSites.filter(site =>
-                        site.structure instanceof StructureRoad);
-                    const roadUnder = roadConstructionSites.find(site => 
-                            Math.max(Math.abs(site.x-creep.x), Math.abs(site.y-creep.y)) <= 1);
-                    if (roadUnder && creep.store[RESOURCE_ENERGY] >= 10){
-                        creep.build(roadUnder);
-                    }
-                    if (creep.store[RESOURCE_ENERGY] >= 5) {
-                        // Get the next position we'll move to
-                        const nextPos = this.getNextMovePosition(creep, target);
-                        
-                        if (nextPos && creep.store[RESOURCE_ENERGY] >= 5) {
-                            const roads =  getObjectsByPrototype(StructureRoad);
-                            const roadThereAlready = roads.find(site => 
-                                site.x === nextPos.x && site.y === nextPos.y);
-                            const siteThereAlready = roadConstructionSites.find(site =>
-                                site.x === nextPos.x && site.y === nextPos.y);
-                            if (!roadThereAlready && !siteThereAlready && roads.length < MAX_ROAD_CONSTRUCTION){
-                                createConstructionSite(nextPos, StructureRoad);
-                            }
-                        }
-                    }
-
-                    if (creep.store[RESOURCE_ENERGY] < 5) { 
-                        this.memory.state = 'mining';
-                        return;
-                    }
+                    this.tryBuildRoadToTarget(creep, target);
                     
                     // Now move towards the target
                     // If target is winObjective, also try to build it

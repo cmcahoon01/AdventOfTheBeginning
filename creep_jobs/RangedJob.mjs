@@ -1,6 +1,7 @@
-import { getObjectById, getObjectsByPrototype, getRange, getTerrainAt } from 'game/utils';
+import { getObjectById, getObjectsByPrototype, getRange, getTerrainAt, findInRange } from 'game/utils';
 import { TERRAIN_WALL, TERRAIN_SWAMP } from 'game/constants';
-import { Creep, StructureSpawn, StructureRampart, Structure } from 'game/prototypes';
+import { EFFECT_SLOWDOWN } from "arena/season_1/construct_and_control/basic/constants";
+import { Creep, StructureSpawn, StructureRampart, Structure, AreaEffect } from 'game/prototypes';
 import { ActiveCreep } from './ActiveCreep.mjs';
 
 // Kiting behavior constants
@@ -87,6 +88,7 @@ export class RangedJob extends ActiveCreep {
     findBestRetreatPosition(creep, enemies, allCreeps, allStructures) {
         // Guard against empty enemies array
         if (enemies.length === 0) {
+            console.log("No enemies to retreat from!");
             return null;
         }
         
@@ -114,11 +116,18 @@ export class RangedJob extends ActiveCreep {
         if (bestPositions.length === 1) {
             return bestPositions[0];
         }
-        
-        // If there are ties, avoid stepping on swamp tiles
+
+        const areaEffects = getObjectsByPrototype(AreaEffect);
+
+        // If there are ties, avoid stepping on swamp tiles or slowdown area effects
         const nonSwampPositions = bestPositions.filter(pos => {
             const terrain = getTerrainAt(pos);
-            return terrain !== TERRAIN_SWAMP;
+            if (terrain === TERRAIN_SWAMP) return false;
+
+            // findInRange with range 0 finds effects exactly on that tile
+            const effectsHere = findInRange(pos, areaEffects, 0);
+            // Exclude if any slowdown effect is present
+            return !effectsHere.some(e => e.effect === EFFECT_SLOWDOWN);
         });
         
         // Use non-swamp positions if available, otherwise use all best positions
@@ -247,19 +256,19 @@ export class RangedJob extends ActiveCreep {
                 const range = getRange(creep, closestEnemy);
                 
                 // If enemy is in attack range, attack
-                if (range <= 3) {
-                    creep.rangedAttack(closestEnemy);
-                }
+                // if (range <= DESIRED_RANGE) {
+                //     creep.rangedAttack(closestEnemy);
+                // }
                 
                 // === MOVEMENT LOGIC WHEN ENEMIES EXIST ===
                 // If there are enemies in range, movement should be dedicated to kiting
-                if (enemiesInRange.length > 0) {
+                if (enemiesInRange.length > 0 && range < DESIRED_RANGE) {
                     // Kite: move away from enemies
                     const retreatPos = this.findBestRetreatPosition(creep, allHostileCreeps, allCreeps, allStructures);
                     if (retreatPos) {
                         creep.moveTo(retreatPos);
                     }
-                } 
+                }
                 // No enemies in range - move towards target based on priority
                 else {
                     // If there are injured allies (excluding self, not in range), move to them first
@@ -272,22 +281,19 @@ export class RangedJob extends ActiveCreep {
                             }
                         }
                         // Otherwise move towards enemies to attack
-                        else if (range > 3) {
+                        else if (range > DESIRED_RANGE) {
                             creep.moveTo(closestEnemy);
-                            if (range == 4) {
-                                creep.rangedAttack(closestEnemy);
-                            }
                         }
                     } else {
                         // Non-healing units just move towards enemies
-                        if (range > 3) {
+                        if (range > DESIRED_RANGE) {
                             creep.moveTo(closestEnemy);
-                            if (range == 4) {
-                                creep.rangedAttack(closestEnemy);
-                            }
                         }
                     }
                 }
+                creep.rangedAttack(closestEnemy);
+            } else {
+                console.log(`Creep ${creep.id} could not find a closest enemy despite enemies existing!`);
             }
         } else {
             // No enemies at all - idle behavior

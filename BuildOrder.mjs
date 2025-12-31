@@ -8,10 +8,8 @@ import { Jobs } from './creep_jobs/JobRegistry.mjs';
 const BUILD_ORDER_TEMPLATE = [
     { jobName: 'cleric' },
     { jobName: 'hauler' },
-    { jobName: 'fighter' },
     { jobName: 'miner' },
     { jobName: 'fighter' },
-    { jobName: 'miner' },
     { jobName: 'archer' }
     // After position 5, haulers are built infinitely
 ];
