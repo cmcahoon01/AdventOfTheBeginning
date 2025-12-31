@@ -8,8 +8,8 @@ import { GameState } from './src/services/GameState.mjs';
 
 const spawn = getObjectsByPrototype(StructureSpawn).find(i => i.my);
 const winObjective = getObjectsByPrototype(ConstructionSite).find(i => i.my);
-const gameState = new GameState();
 const screepController = new ScreepController();
+const gameState = new GameState(screepController);
 const buildOrder = new BuildOrder(screepController, winObjective, gameState);
 
 export function loop() {

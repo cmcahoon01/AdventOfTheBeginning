@@ -39,4 +39,9 @@ export class ScreepController {
             return true;
         });
     }
+
+    // Check if there's any creep with the specified job role alive
+    hasCreepOfRole(jobName) {
+        return this.creeps.some(activeCreep => activeCreep.jobName === jobName);
+    }
 }

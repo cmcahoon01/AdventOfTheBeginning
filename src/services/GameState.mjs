@@ -13,7 +13,8 @@ import { detectFortifiedMiner } from "./StructureUtils.mjs";
  *   const enemies = gameState.getEnemyCreeps();
  */
 export class GameState {
-    constructor() {
+    constructor(screepController) {
+        this.screepController = screepController;
         this.mySpawn = null;
         this.enemySpawn = null;
         this.myCreeps = [];
@@ -24,6 +25,7 @@ export class GameState {
         this.sources = [];
         this.myConstructionSites = [];
         this.fortifiedMiner = null; // Cached detection of enemy miner on rampart near corner
+        this.hasBuiltMiner = false;
     }
     
     /**
@@ -56,6 +58,9 @@ export class GameState {
         
         // Cache fortified miner detection
         this.fortifiedMiner = detectFortifiedMiner(this);
+
+        // Check if we have built a miner
+        this.hasBuiltMiner = this.screepController.hasCreepOfRole('miner');
     }
     
     /**
@@ -145,5 +150,13 @@ export class GameState {
      */
     getFortifiedMiner() {
         return this.fortifiedMiner;
+    }
+
+    /**
+     * Get whether a miner is alive.
+     * @return {boolean} True if a miner has been built, false otherwise
+     */
+    getHasBuiltMiner() {
+        return this.hasBuiltMiner;
     }
 }
