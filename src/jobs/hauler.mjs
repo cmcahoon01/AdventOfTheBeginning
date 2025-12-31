@@ -44,11 +44,9 @@ export class HaulerJob extends ActiveCreep {
         }
 
         // === INITIAL WIN OBJECTIVE TRANSFER ===
-        // If the win objective exists, has 0 progress, and hasn't been initialized yet,
+        // If the win objective hasn't been initialized yet,
         // withdraw from spawn and build the win objective once
-        if (this.winObjective && 
-            this.winObjective.progress === 0 && 
-            !this.gameState.getHasInitializedWinObjective()) {
+        if (!this.gameState.getHasInitializedWinObjective()) {
             
             const spawn = this.gameState.getMySpawn();
             const usedCapacity = creep.store[RESOURCE_ENERGY] || 0;
@@ -68,6 +66,7 @@ export class HaulerJob extends ActiveCreep {
                     // Withdraw failed for some reason (e.g., spawn is empty, creep is full)
                     // Set flag to prevent getting stuck in this state
                     this.gameState.setHasInitializedWinObjective();
+                    console.log(`Creep ${creep.id} failed to withdraw from spawn: ${withdrawResult}`);
                 }
                 return;
             } else {
@@ -81,6 +80,7 @@ export class HaulerJob extends ActiveCreep {
                 } else {
                     // Build failed for some other reason, set flag to prevent getting stuck
                     this.gameState.setHasInitializedWinObjective();
+                    console.log(`Creep ${creep.id} failed to build win objective: ${buildResult}`);
                 }
                 return;
             }
