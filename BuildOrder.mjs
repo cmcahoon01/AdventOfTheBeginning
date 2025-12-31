@@ -95,6 +95,8 @@ export class BuildOrder {
         // Consider it roughly equal if ratio is between 0.8 and 1.2
         const isStrongerOrEqual = comparison.ratio >= 0.8;
         
+        console.log(`Team strength - My: ${comparison.myTeam.strength.toFixed(1)}, Enemy: ${comparison.enemyTeam.strength.toFixed(1)}, Ratio: ${comparison.ratio.toFixed(2)}, Strategy: ${isStrongerOrEqual ? 'LOGISTICS' : 'MILITARY'}`);
+        
         if (isStrongerOrEqual) {
             // Logistics path: Build 2 miners, then haulers
             if (creepCounts.miner < 2) {
@@ -120,8 +122,11 @@ export class BuildOrder {
             const militaryArchers = creepCounts.archer;
             
             // Build archers if we need more to maintain 3:1 ratio
-            // We want 3 archers for every 1 cleric
-            if (militaryArchers < militaryClerics * 3) {
+            // We want 3 archers for every 1 cleric (after the initial one)
+            // When militaryClerics is 0, we should build 3 archers before the next cleric
+            const desiredArchers = (militaryClerics + 1) * 3;
+            
+            if (militaryArchers < desiredArchers) {
                 const archerClass = Jobs['archer'];
                 return {
                     job: 'archer',
