@@ -1,4 +1,4 @@
-import { getObjectById } from 'game/utils';
+import { getObjectById, getRange } from 'game/utils';
 import { ATTACK, MOVE, ERR_NOT_IN_RANGE} from 'game/constants';
 import { Creep, StructureSpawn, StructureRampart } from 'game/prototypes';
 import { ActiveCreep } from './ActiveCreep.mjs';
@@ -49,14 +49,24 @@ export class FighterJob extends ActiveCreep {
         // Filter out enemies that are standing on ramparts
         const hostileCreeps = CombatUtils.filterMeleeTargetableEnemies(allHostileCreeps, ramparts);
         
-        // If there are no targetable enemies (all on ramparts or none exist), idle
-        if (hostileCreeps.length === 0) {
+        // Check if there are any enemies within range 5
+        const enemiesInRange5 = hostileCreeps.filter(enemy => getRange(creep, enemy) <= 5);
+        
+        // If there are no targetable enemies within range 5, check for fortified miner
+        if (enemiesInRange5.length === 0) {
+            const fortifiedMiner = this.gameState.getFortifiedMiner();
+            if (fortifiedMiner) {
+                this.attackFortifiedMiner(creep, fortifiedMiner);
+                return;
+            }
+            
+            // No fortified miner either, idle
             this.idle(creep);
             return;
         }
 
-        // Find the closest enemy creep that is not on a rampart
-        const target = creep.findClosestByRange(hostileCreeps);
+        // Find the closest enemy creep that is not on a rampart and is within range 5
+        const target = creep.findClosestByRange(enemiesInRange5);
         
         if (target) {
             // Try to attack the target
@@ -69,6 +79,31 @@ export class FighterJob extends ActiveCreep {
         } else {
             this.idle(creep);
         }
+    }
+    
+    /**
+     * Attack a fortified miner by moving towards it and breaking ramparts in the way.
+     * @param {Creep} creep - The fighter creep
+     * @param {Object} fortifiedMiner - Object with {creep, rampart, source}
+     */
+    attackFortifiedMiner(creep, fortifiedMiner) {
+        const targetCreep = fortifiedMiner.creep;
+        const targetRampart = fortifiedMiner.rampart;
+        
+        // Try to attack the target creep first (if in range)
+        const attackCreepResult = creep.attack(targetCreep);
+        
+        if (attackCreepResult === ERR_NOT_IN_RANGE) {
+            // Not in range of the creep, check if we can attack the rampart
+            const attackRampartResult = creep.attack(targetRampart);
+            
+            if (attackRampartResult === ERR_NOT_IN_RANGE) {
+                // Not in range of rampart either, move towards the target
+                creep.moveTo(targetCreep);
+            }
+            // If we successfully attacked the rampart, no need to move
+        }
+        // If we successfully attacked the creep, no need to move
     }
 
     idle(creep) {
