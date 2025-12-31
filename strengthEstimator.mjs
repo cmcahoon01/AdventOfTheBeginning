@@ -29,9 +29,23 @@ import { ATTACK, RANGED_ATTACK, HEAL } from 'game/constants';
 const ATTACK_POWER = 30;
 const RANGED_ATTACK_POWER = 10;
 const HEAL_POWER = 12;
-const RANGED_ADVANTAGE_MULTIPLIER = 3; // Ranged units are 3x more effective due to kiting
-const RANGED_HEAL_MULTIPLIER = 2.0; // Healing is very effective with ranged
-const MELEE_HEAL_MULTIPLIER = 0.5; // Healing is less effective with melee
+
+// Empirical multipliers based on observed combat outcomes
+// RANGED_ADVANTAGE_MULTIPLIER = 3: One ranged unit can beat up to 3 melee units through kiting
+// This accounts for the ability to maintain distance and deal damage without taking hits
+const RANGED_ADVANTAGE_MULTIPLIER = 3;
+
+// RANGED_HEAL_MULTIPLIER = 2.0: Ranged units with healing are ~2x as effective as ranged-only
+// Healing allows sustained engagement and survival, effectively doubling combat effectiveness
+const RANGED_HEAL_MULTIPLIER = 2.0;
+
+// MELEE_HEAL_MULTIPLIER = 0.5: Melee healing is less effective due to being easily focused
+// Two pure melee units beat one melee+heal unit, indicating healing provides <50% bonus
+const MELEE_HEAL_MULTIPLIER = 0.5;
+
+// SUPPORT_HEAL_MULTIPLIER = 0.25: Pure support units have minimal combat value
+// They can't deal damage and can be easily eliminated
+const SUPPORT_HEAL_MULTIPLIER = 0.25;
 
 /**
  * Count body parts of a specific type in a creep
@@ -81,7 +95,7 @@ export function calculateCreepStrength(creep) {
         }
     } else if (healParts > 0) {
         // Support unit with only healing (minimal combat value)
-        strength += healParts * HEAL_POWER * 0.25;
+        strength += healParts * HEAL_POWER * SUPPORT_HEAL_MULTIPLIER;
     }
 
     return strength;

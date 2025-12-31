@@ -27,8 +27,13 @@ import {
 ### Calculate individual creep strength
 
 ```javascript
-// Get a specific creep
-const myCreep = getObjectById('creepId');
+import { getObjectsByPrototype } from 'game/utils';
+import { Creep } from 'game/prototypes';
+import { calculateCreepStrength } from './strengthEstimator.mjs';
+
+// Get a specific creep from all creeps
+const myCreeps = getObjectsByPrototype(Creep).filter(c => c.my);
+const myCreep = myCreeps[0]; // Get first friendly creep
 
 // Calculate its combat strength
 const strength = calculateCreepStrength(myCreep);
