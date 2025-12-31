@@ -1,6 +1,7 @@
 import { getObjectById } from 'game/utils';
 import { WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY } from 'game/constants';
 import { ActiveCreep } from './ActiveCreep.mjs';
+import { BodyPartCalculator, MapTopology } from '../constants.mjs';
 
 // Hauler job - resource gathering and construction
 export class HaulerJob extends ActiveCreep {
@@ -9,7 +10,7 @@ export class HaulerJob extends ActiveCreep {
     }
 
     static get COST() {
-        return 250; // 100 + 50 + 50 + 50
+        return BodyPartCalculator.calculateCost(this.BODY);
     }
 
     static get JOB_NAME() {
@@ -50,10 +51,13 @@ export class HaulerJob extends ActiveCreep {
                 return;
             }
 
-            // Find the closest source, excluding corner sources (y < 30 or y > 70)
+            // Find the closest source, excluding corner sources (y < CORNER_TOP or y > CORNER_BOTTOM)
             // This forces haulers to use the central sources near the middle of the map
             const allSources = this.gameState.getSources();
-            const centralSources = allSources.filter(source => source.y >= 30 && source.y <= 70);
+            const centralSources = allSources.filter(source => 
+                source.y >= MapTopology.CORNER_TOP_THRESHOLD && 
+                source.y <= MapTopology.CORNER_BOTTOM_THRESHOLD
+            );
             // Fallback to all sources if no central sources exist
             const sourcesToUse = centralSources.length > 0 ? centralSources : allSources;
             const closestSource = creep.findClosestByRange(sourcesToUse);

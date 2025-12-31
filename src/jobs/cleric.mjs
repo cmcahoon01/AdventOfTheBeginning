@@ -2,6 +2,7 @@ import { getObjectById, getRange } from 'game/utils';
 import { RANGED_ATTACK, HEAL, MOVE } from 'game/constants';
 import { RangedJob } from './RangedJob.mjs';
 import { isInHealRange, isInRangedHealRange } from '../utils/RangeUtils.mjs';
+import { BodyPartCalculator } from '../constants.mjs';
 
 // Cleric job - ranged combat with healing abilities
 export class ClericJob extends RangedJob {
@@ -10,7 +11,7 @@ export class ClericJob extends RangedJob {
     }
 
     static get COST() {
-        return 500; // MOVE(50) + MOVE(50) + RANGED_ATTACK(150) + HEAL(250) = 500
+        return BodyPartCalculator.calculateCost(this.BODY);
     }
 
     static get JOB_NAME() {

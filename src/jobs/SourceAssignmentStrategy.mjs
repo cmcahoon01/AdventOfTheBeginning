@@ -1,4 +1,5 @@
 import { TerrainAnalyzer } from '../combat/TerrainAnalyzer.mjs';
+import { MapTopology } from '../constants.mjs';
 
 /**
  * Handles source selection logic for miners.
@@ -47,7 +48,7 @@ export class SourceAssignmentStrategy {
         // First miner gets top source (corner source based on team side)
         if (minerIndex === 0) {
             // Filter to corner sources (top)
-            const topSources = sources.filter(s => s.y < 30);
+            const topSources = sources.filter(s => s.y < MapTopology.CORNER_TOP_THRESHOLD);
             if (teamSide === 'left') {
                 // Get the leftmost top source
                 return topSources.sort((a, b) => a.x - b.x)[0];
@@ -59,7 +60,7 @@ export class SourceAssignmentStrategy {
         
         // Second miner gets bottom source
         if (minerIndex === 1) {
-            const bottomSources = sources.filter(s => s.y > 70);
+            const bottomSources = sources.filter(s => s.y > MapTopology.CORNER_BOTTOM_THRESHOLD);
             if (teamSide === 'left') {
                 // Get the leftmost bottom source
                 return bottomSources.sort((a, b) => a.x - b.x)[0];

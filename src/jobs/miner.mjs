@@ -2,11 +2,9 @@ import { getObjectById } from 'game/utils';
 import { WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY } from 'game/constants';
 import { ActiveCreep } from './ActiveCreep.mjs';
 import { SourceAssignmentStrategy } from './SourceAssignmentStrategy.mjs';
-import { ExtensionBuilder, EXTENSIONS_PER_MINER } from './ExtensionBuilder.mjs';
+import { ExtensionBuilder } from './ExtensionBuilder.mjs';
 import { MinerStateMachine } from './MinerStateMachine.mjs';
-
-// Re-export for backward compatibility
-export { EXTENSIONS_PER_MINER };
+import { BodyPartCalculator } from '../constants.mjs';
 
 // Miner job - dedicated resource extraction and extension building
 export class MinerJob extends ActiveCreep {
@@ -15,7 +13,7 @@ export class MinerJob extends ActiveCreep {
     }
 
     static get COST() {
-        return 500; // 100 + 100 + 100 + 100 + 50 + 50
+        return BodyPartCalculator.calculateCost(this.BODY);
     }
 
     static get JOB_NAME() {

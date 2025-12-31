@@ -3,6 +3,7 @@ import { ATTACK, MOVE, ERR_NOT_IN_RANGE} from 'game/constants';
 import { Creep, StructureSpawn, StructureRampart } from 'game/prototypes';
 import { ActiveCreep } from './ActiveCreep.mjs';
 import { CombatUtils } from '../utils/CombatUtils.mjs';
+import { BodyPartCalculator } from '../constants.mjs';
 
 // Fighter job - melee combat
 export class FighterJob extends ActiveCreep {
@@ -11,7 +12,7 @@ export class FighterJob extends ActiveCreep {
     }
 
     static get COST() {
-        return 130; // 50 + 80
+        return BodyPartCalculator.calculateCost(this.BODY);
     }
 
     static get JOB_NAME() {

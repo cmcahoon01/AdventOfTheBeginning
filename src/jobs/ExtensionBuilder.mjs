@@ -3,9 +3,8 @@ import { StructureExtension } from 'game/prototypes';
 import { TERRAIN_WALL, ERR_NOT_IN_RANGE } from 'game/constants';
 import { createConstructionSite } from 'game';
 import { isAdjacent } from '../utils/RangeUtils.mjs';
-
-// Number of extensions each miner should create
-export const EXTENSIONS_PER_MINER = 5;
+import { MapTopology } from '../constants.mjs';
+import { TerrainAnalyzer } from '../combat/TerrainAnalyzer.mjs';
 
 /**
  * Manages extension construction for miners.
@@ -36,7 +35,7 @@ export class ExtensionBuilder {
             const pos = { x: creep.x + offset.dx, y: creep.y + offset.dy };
             
             // Skip if out of bounds
-            if (pos.x < 0 || pos.x >= 100 || pos.y < 0 || pos.y >= 100) {
+            if (!TerrainAnalyzer.isValidPosition(pos)) {
                 continue;
             }
             
@@ -60,10 +59,10 @@ export class ExtensionBuilder {
     static createExtensionSites(creep, source) {
         const extensionPositions = this.getExtensionPositions(creep, source);
         
-        // Create construction sites (limit to EXTENSIONS_PER_MINER)
+        // Create construction sites (limit to MapTopology.EXTENSIONS_PER_MINER)
         let created = 0;
         for (const pos of extensionPositions) {
-            if (created >= EXTENSIONS_PER_MINER) break;
+            if (created >= MapTopology.EXTENSIONS_PER_MINER) break;
             if (getTerrainAt(pos) === TERRAIN_WALL) continue;
             
             const result = createConstructionSite(pos, StructureExtension);
@@ -75,7 +74,7 @@ export class ExtensionBuilder {
             }
         }
         
-        if (created < EXTENSIONS_PER_MINER) {
+        if (created < MapTopology.EXTENSIONS_PER_MINER) {
             console.log(`Could only create ${created} extension sites`);
         }
         
@@ -121,7 +120,7 @@ export class ExtensionBuilder {
         const allExtensions = gameState.getMyExtensions();
         const nearbyExtensions = allExtensions.filter(ext => isAdjacent(creep, ext));
         
-        return nearbyExtensions.length >= EXTENSIONS_PER_MINER;
+        return nearbyExtensions.length >= MapTopology.EXTENSIONS_PER_MINER;
     }
 
     /**
