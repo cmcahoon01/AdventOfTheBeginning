@@ -2,6 +2,7 @@ import { getObjectById } from 'game/utils';
 import { WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY } from 'game/constants';
 import { ActiveCreep } from './ActiveCreep.mjs';
 import { BodyPartCalculator, MapTopology } from '../constants.mjs';
+import { CombatUtils } from '../utils/CombatUtils.mjs';
 
 // Hauler job - resource gathering and construction
 export class HaulerJob extends ActiveCreep {
@@ -31,6 +32,14 @@ export class HaulerJob extends ActiveCreep {
     act() {
         const creep = getObjectById(this.id);
         if (!creep) {
+            return;
+        }
+
+        // === DEFENSIVE POSTURING CHECK ===
+        const inDefensiveMode = CombatUtils.handleDefensiveRetreat(creep, this.gameState);
+        
+        if (inDefensiveMode) {
+            // Haulers don't attack, just stay on ramparts
             return;
         }
 

@@ -26,32 +26,17 @@ export class FighterJob extends ActiveCreep {
         }
 
         // === DEFENSIVE POSTURING CHECK ===
-        const shouldRetreat = CombatUtils.shouldAdoptDefensivePosture(this.gameState);
+        const inDefensiveMode = CombatUtils.handleDefensiveRetreat(creep, this.gameState);
         
-        if (shouldRetreat) {
-            // Move to ramparts for defense
-            const defensiveRampart = CombatUtils.findDefensiveRampartPosition(creep, this.gameState);
-            if (defensiveRampart) {
-                // Check if we're already on a rampart
-                const onRampart = defensiveRampart.x === creep.x && defensiveRampart.y === creep.y;
-                
-                if (!onRampart) {
-                    // Move to the defensive rampart
-                    creep.moveTo(defensiveRampart);
-                }
-                // If already on rampart, stay there and continue with normal actions
-            }
-            
+        if (inDefensiveMode) {
             // Still attack enemies if they're in range (even while on ramparts)
             const allHostileCreeps = this.gameState.getEnemyCreeps();
             if (allHostileCreeps.length > 0) {
                 const closestEnemy = creep.findClosestByRange(allHostileCreeps);
                 if (closestEnemy) {
-                    const attackResult = creep.attack(closestEnemy);
-                    // No need to move - we stay on ramparts
+                    creep.attack(closestEnemy);
                 }
             }
-            
             return;
         }
 

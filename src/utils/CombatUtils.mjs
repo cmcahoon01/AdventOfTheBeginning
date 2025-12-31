@@ -92,6 +92,37 @@ export class CombatUtils {
     }
     
     /**
+     * Handle defensive retreat to ramparts when at disadvantage.
+     * This is the common defensive behavior for all creeps.
+     * Returns true if the creep should continue with defensive posture, false otherwise.
+     * 
+     * @param {Creep} creep - The creep to check and move
+     * @param {GameState} gameState - The game state service
+     * @returns {boolean} True if in defensive mode and should return early, false otherwise
+     */
+    static handleDefensiveRetreat(creep, gameState) {
+        const shouldRetreat = CombatUtils.shouldAdoptDefensivePosture(gameState);
+        
+        if (!shouldRetreat) {
+            return false; // Not in defensive mode
+        }
+        
+        // Move to ramparts for defense
+        const defensiveRampart = CombatUtils.findDefensiveRampartPosition(creep, gameState);
+        if (defensiveRampart) {
+            // Check if we're already on a rampart
+            const onRampart = defensiveRampart.x === creep.x && defensiveRampart.y === creep.y;
+            
+            if (!onRampart) {
+                // Move to the defensive rampart
+                creep.moveTo(defensiveRampart);
+            }
+        }
+        
+        return true; // In defensive mode
+    }
+    
+    /**
      * Filter enemies by rampart status.
      * Separates enemies into those on ramparts and those not on ramparts.
      * 

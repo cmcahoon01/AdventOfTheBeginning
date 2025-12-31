@@ -104,27 +104,13 @@ export class RangedJob extends ActiveCreep {
         // Determine if there are enemies in range
         const enemiesInRange = allHostileCreeps.filter(e => isInRangedAttackRange(creep, e));
         
-        // === DEFENSIVE POSTURING CHECK ===
-        const shouldRetreat = CombatUtils.shouldAdoptDefensivePosture(this.gameState);
-        
         // === HEALING LOGIC (if applicable) ===
         this.performHealing(creep, damagedCreeps, allCreeps);
         
-        // === DEFENSIVE RETREAT LOGIC ===
-        if (shouldRetreat) {
-            // Move to ramparts for defense
-            const defensiveRampart = CombatUtils.findDefensiveRampartPosition(creep, this.gameState);
-            if (defensiveRampart) {
-                // Check if we're already on a rampart
-                const onRampart = defensiveRampart.x === creep.x && defensiveRampart.y === creep.y;
-                
-                if (!onRampart) {
-                    // Move to the defensive rampart
-                    creep.moveTo(defensiveRampart);
-                }
-                // If already on rampart, stay there and continue with normal actions
-            }
-            
+        // === DEFENSIVE POSTURING CHECK ===
+        const inDefensiveMode = CombatUtils.handleDefensiveRetreat(creep, this.gameState);
+        
+        if (inDefensiveMode) {
             // Still attack enemies if they're in range (even while on ramparts)
             if (allHostileCreeps.length > 0) {
                 const closestEnemy = creep.findClosestByRange(allHostileCreeps);
@@ -132,7 +118,6 @@ export class RangedJob extends ActiveCreep {
                     creep.rangedAttack(closestEnemy);
                 }
             }
-            
             return;
         }
         
