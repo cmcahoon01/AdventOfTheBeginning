@@ -9,8 +9,8 @@ const ARENA_SIZE = 100; // Arena dimensions
 
 // Base class for ranged combat units (archer and cleric)
 export class RangedJob extends ActiveCreep {
-    constructor() {
-        super();
+    constructor(id, jobName, controller, winObjective) {
+        super(id, jobName, controller, winObjective);
         if (new.target === RangedJob) {
             throw new TypeError("Cannot construct RangedJob instances directly");
         }
