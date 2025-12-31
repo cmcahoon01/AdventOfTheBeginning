@@ -1,18 +1,6 @@
 import { Jobs } from '../jobs/JobRegistry.mjs';
 import { compareTeamStrengths } from '../combat/strengthEstimator.mjs';
-
-// Initial build order (always the same)
-// After this, build order becomes adaptive based on team strength
-const INITIAL_BUILD_ORDER = [
-    { jobName: 'cleric' },
-    { jobName: 'hauler' }
-];
-
-// Strategy threshold: ratio >= 0.8 means we're stronger or roughly equal
-const STRENGTH_THRESHOLD = 0.8;
-
-// Military build ratio: 3 archers per 1 cleric
-const ARCHER_TO_CLERIC_RATIO = 3;
+import { BuildConfig } from '../constants.mjs';
 
 /**
  * Determines what to build based on game state.
@@ -49,6 +37,7 @@ export class BuildStrategy {
         }
 
         // Phase 1: Initial build order (cleric, hauler)
+        const INITIAL_BUILD_ORDER = BuildConfig.INITIAL_BUILD.map(jobName => ({ jobName }));
         for (let i = 0; i < INITIAL_BUILD_ORDER.length; i++) {
             const template = INITIAL_BUILD_ORDER[i];
             const jobName = template.jobName;
@@ -81,7 +70,7 @@ export class BuildStrategy {
         const comparison = compareTeamStrengths(this.gameState);
         
         // Determine if we're stronger or roughly equal
-        const isStrongerOrEqual = comparison.ratio >= STRENGTH_THRESHOLD;
+        const isStrongerOrEqual = comparison.ratio >= BuildConfig.STRENGTH_THRESHOLD;
         
         console.log(`Team strength - My: ${comparison.myTeam.strength.toFixed(1)}, Enemy: ${comparison.enemyTeam.strength.toFixed(1)}, Ratio: ${comparison.ratio.toFixed(2)}, Strategy: ${isStrongerOrEqual ? 'LOGISTICS' : 'MILITARY'}`);
         
@@ -110,9 +99,9 @@ export class BuildStrategy {
             const militaryArchers = creepCounts.archer;
             
             // Build archers if we need more to maintain the ratio
-            // We want ARCHER_TO_CLERIC_RATIO archers for every 1 cleric (after the initial one)
+            // We want BuildConfig.MILITARY_RATIO.ARCHERS_PER_CLERIC archers for every 1 cleric (after the initial one)
             // When militaryClerics is 0, we should build that many archers before the next cleric
-            const desiredArchers = (militaryClerics + 1) * ARCHER_TO_CLERIC_RATIO;
+            const desiredArchers = (militaryClerics + 1) * BuildConfig.MILITARY_RATIO.ARCHERS_PER_CLERIC;
             
             if (militaryArchers < desiredArchers) {
                 const archerClass = Jobs['archer'];

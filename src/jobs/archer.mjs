@@ -1,5 +1,6 @@
 import { RANGED_ATTACK, MOVE } from 'game/constants';
 import { RangedJob } from './RangedJob.mjs';
+import { BodyPartCalculator } from '../constants.mjs';
 
 // Archer job - ranged combat without healing (behaves like cleric without healing)
 export class ArcherJob extends RangedJob {
@@ -8,7 +9,7 @@ export class ArcherJob extends RangedJob {
     }
 
     static get COST() {
-        return 200; // 50 + 150
+        return BodyPartCalculator.calculateCost(this.BODY);
     }
 
     static get JOB_NAME() {

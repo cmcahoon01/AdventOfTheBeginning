@@ -1,8 +1,6 @@
 import { getTerrainAt } from 'game/utils';
 import { TERRAIN_WALL, TERRAIN_SWAMP } from 'game/constants';
-
-// Arena dimensions
-const ARENA_SIZE = 100;
+import { MapTopology } from '../constants.mjs';
 
 /**
  * Handles terrain and position validation.
@@ -15,7 +13,8 @@ export class TerrainAnalyzer {
      * @returns {boolean} True if position is within bounds
      */
     static isValidPosition(pos) {
-        return pos.x >= 0 && pos.x < ARENA_SIZE && pos.y >= 0 && pos.y < ARENA_SIZE;
+        return pos.x >= 0 && pos.x < MapTopology.ARENA_SIZE && 
+               pos.y >= 0 && pos.y < MapTopology.ARENA_SIZE;
     }
 
     /**

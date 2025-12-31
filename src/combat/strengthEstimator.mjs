@@ -1,4 +1,5 @@
 import { ATTACK, RANGED_ATTACK, HEAL } from 'game/constants';
+import { CombatConfig } from '../constants.mjs';
 
 /**
  * Combat Strength Estimator
@@ -22,28 +23,6 @@ import { ATTACK, RANGED_ATTACK, HEAL } from 'game/constants';
  *   - For ranged units: multiplier = 2.0 (highly effective)
  *   - For melee units: multiplier = 0.5 (less effective in melee combat)
  */
-
-// Combat constants
-const ATTACK_POWER = 30;
-const RANGED_ATTACK_POWER = 10;
-const HEAL_POWER = 12;
-
-// Empirical multipliers based on observed combat outcomes
-// RANGED_ADVANTAGE_MULTIPLIER = 3: One ranged unit can beat up to 3 melee units through kiting
-// This accounts for the ability to maintain distance and deal damage without taking hits
-const RANGED_ADVANTAGE_MULTIPLIER = 3;
-
-// RANGED_HEAL_MULTIPLIER = 2.0: Ranged units with healing are ~2x as effective as ranged-only
-// Healing allows sustained engagement and survival, effectively doubling combat effectiveness
-const RANGED_HEAL_MULTIPLIER = 2.0;
-
-// MELEE_HEAL_MULTIPLIER = 0.5: Melee healing is less effective due to being easily focused
-// Two pure melee units beat one melee+heal unit, indicating healing provides <50% bonus
-const MELEE_HEAL_MULTIPLIER = 0.5;
-
-// SUPPORT_HEAL_MULTIPLIER = 1: Pure support units have minimal combat value
-// They can't deal damage and can be easily eliminated
-const SUPPORT_HEAL_MULTIPLIER = 1;
 
 /**
  * Count body parts of a specific type in a creep
@@ -77,23 +56,23 @@ export function calculateCreepStrength(creep) {
     // Calculate base combat value
     if (rangedAttackParts > 0) {
         // Ranged unit - benefits from kiting and range advantage
-        strength += rangedAttackParts * RANGED_ATTACK_POWER * RANGED_ADVANTAGE_MULTIPLIER;
+        strength += rangedAttackParts * CombatConfig.DAMAGE.RANGED_ATTACK_POWER * CombatConfig.MULTIPLIERS.RANGED_ADVANTAGE;
         
         // Healing is highly effective with ranged combat
         if (healParts > 0) {
-            strength += healParts * HEAL_POWER * RANGED_HEAL_MULTIPLIER;
+            strength += healParts * CombatConfig.DAMAGE.HEAL_POWER * CombatConfig.MULTIPLIERS.RANGED_HEAL;
         }
     } else if (attackParts > 0) {
         // Melee unit - straightforward damage
-        strength += attackParts * ATTACK_POWER;
+        strength += attackParts * CombatConfig.DAMAGE.ATTACK_POWER;
         
         // Healing is less effective in melee combat (gets focused down)
         if (healParts > 0) {
-            strength += healParts * HEAL_POWER * MELEE_HEAL_MULTIPLIER;
+            strength += healParts * CombatConfig.DAMAGE.HEAL_POWER * CombatConfig.MULTIPLIERS.MELEE_HEAL;
         }
     } else if (healParts > 0) {
         // Support unit with only healing (minimal combat value)
-        strength += healParts * HEAL_POWER * SUPPORT_HEAL_MULTIPLIER;
+        strength += healParts * CombatConfig.DAMAGE.HEAL_POWER * CombatConfig.MULTIPLIERS.SUPPORT_HEAL;
     }
 
     return strength;
