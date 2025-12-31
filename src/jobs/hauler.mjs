@@ -1,5 +1,5 @@
 import {getObjectById} from 'game/utils';
-import {WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY} from 'game/constants';
+import {WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY, OK} from 'game/constants';
 import {ActiveCreep} from './ActiveCreep.mjs';
 import {BodyPartCalculator, MapTopology} from '../constants.mjs';
 import {CombatUtils} from '../services/CombatUtils.mjs';
@@ -41,6 +41,49 @@ export class HaulerJob extends ActiveCreep {
         if (inDefensiveMode) {
             // Haulers don't attack, just stay on ramparts
             return;
+        }
+
+        // === INITIAL WIN OBJECTIVE TRANSFER ===
+        // If the win objective exists, has 0 progress, and hasn't been initialized yet,
+        // withdraw from spawn and build the win objective once
+        if (this.winObjective && 
+            this.winObjective.progress === 0 && 
+            !this.gameState.getHasInitializedWinObjective()) {
+            
+            const spawn = this.gameState.getMySpawn();
+            const usedCapacity = creep.store[RESOURCE_ENERGY] || 0;
+            
+            if (!spawn) {
+                // No spawn exists, can't withdraw. Skip this initialization.
+                this.gameState.setHasInitializedWinObjective();
+                return;
+            }
+            
+            if (usedCapacity === 0) {
+                // Withdraw from spawn
+                const withdrawResult = creep.withdraw(spawn, RESOURCE_ENERGY);
+                if (withdrawResult === ERR_NOT_IN_RANGE) {
+                    creep.moveTo(spawn);
+                } else if (withdrawResult !== OK) {
+                    // Withdraw failed for some reason (e.g., spawn is empty, creep is full)
+                    // Set flag to prevent getting stuck in this state
+                    this.gameState.setHasInitializedWinObjective();
+                }
+                return;
+            } else {
+                // Build the win objective (creep has energy)
+                const buildResult = creep.build(this.winObjective);
+                if (buildResult === ERR_NOT_IN_RANGE) {
+                    creep.moveTo(this.winObjective);
+                } else if (buildResult === OK) {
+                    // Successfully built, set the flag
+                    this.gameState.setHasInitializedWinObjective();
+                } else {
+                    // Build failed for some other reason, set flag to prevent getting stuck
+                    this.gameState.setHasInitializedWinObjective();
+                }
+                return;
+            }
         }
 
         // Initialize state if not set
