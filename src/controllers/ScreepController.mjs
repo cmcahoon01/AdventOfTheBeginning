@@ -16,7 +16,6 @@ export class ScreepController {
         const JobClass = Jobs[jobName];
         const activeCreep = new JobClass(id, jobName, this, winObjective, gameState);
         this.creeps.push(activeCreep);
-        console.log(`Added creep ${id} with job ${jobName}`);
     }
 
     // Update all creeps - remove dead ones and call actions for alive ones

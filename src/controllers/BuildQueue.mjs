@@ -35,7 +35,6 @@ export class BuildQueue {
             if (!alreadyAdded) {
                 // Add the creep to memory with its job
                 this.screepController.addCreep(creepId, this.pendingSpawnJob, winObjective, this.gameState);
-                console.log(`Added spawning ${this.pendingSpawnJob} with id ${creepId} to memory`);
             }
             // Clear pending job once we've checked and processed it
             this.pendingSpawnJob = null;

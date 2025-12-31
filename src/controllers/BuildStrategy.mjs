@@ -81,12 +81,10 @@ export class BuildStrategy {
         
         // Determine if we're stronger or roughly equal
         const isStrongerOrEqual = comparison.ratio >= BuildConfig.STRENGTH_THRESHOLD;
-        
-        console.log(`Team strength - My: ${comparison.myTeam.strength.toFixed(1)}, Enemy: ${comparison.enemyTeam.strength.toFixed(1)}, Ratio: ${comparison.ratio.toFixed(2)}, Strategy: ${isStrongerOrEqual ? 'LOGISTICS' : 'MILITARY'}`);
-        
+
         if (isStrongerOrEqual) {
-            // Logistics path: Build 2 miners, then haulers
-            if (creepCounts.miner < 2) {
+            // Logistics path: Build 1 miner, then haulers
+            if (creepCounts.miner < 1) {
                 const minerClass = Jobs['miner'];
                 return {
                     job: 'miner',

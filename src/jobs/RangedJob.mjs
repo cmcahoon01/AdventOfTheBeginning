@@ -2,8 +2,8 @@ import { getObjectById, getObjectsByPrototype, getRange } from 'game/utils';
 import { Creep, StructureSpawn, StructureRampart, Structure } from 'game/prototypes';
 import { ActiveCreep } from './ActiveCreep.mjs';
 import { KitingBehavior } from '../combat/KitingBehavior.mjs';
-import { isInRangedAttackRange, RANGED_ATTACK_RANGE } from '../utils/RangeUtils.mjs';
-import { CombatUtils } from '../utils/CombatUtils.mjs';
+import { isInRangedAttackRange, RANGED_ATTACK_RANGE } from '../services/RangeUtils.mjs';
+import { CombatUtils } from '../services/CombatUtils.mjs';
 import { MapTopology } from '../constants.mjs';
 
 // Kiting behavior constants

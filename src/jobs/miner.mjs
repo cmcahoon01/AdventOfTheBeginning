@@ -5,7 +5,7 @@ import { SourceAssignmentStrategy } from './SourceAssignmentStrategy.mjs';
 import { ExtensionBuilder } from './ExtensionBuilder.mjs';
 import { MinerStateMachine } from './MinerStateMachine.mjs';
 import { BodyPartCalculator } from '../constants.mjs';
-import { CombatUtils } from '../utils/CombatUtils.mjs';
+import { CombatUtils } from '../services/CombatUtils.mjs';
 
 // Miner job - dedicated resource extraction and extension building
 export class MinerJob extends ActiveCreep {

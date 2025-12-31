@@ -15,12 +15,13 @@
  * These values are defined by the Screeps Arena API.
  */
 export const BODY_PART_COSTS = {
-    MOVE: 50,
-    ATTACK: 80,
-    RANGED_ATTACK: 150,
-    HEAL: 250,
-    WORK: 100,
-    CARRY: 50
+    move: 50,
+    attack: 80,
+    ranged_attack: 150,
+    heal: 250,
+    work: 100,
+    carry: 50,
+    tough: 10,
 };
 
 /**

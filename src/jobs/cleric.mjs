@@ -1,7 +1,7 @@
 import { getObjectById, getRange } from 'game/utils';
 import { RANGED_ATTACK, HEAL, MOVE } from 'game/constants';
 import { RangedJob } from './RangedJob.mjs';
-import { isInHealRange, isInRangedHealRange } from '../utils/RangeUtils.mjs';
+import { isInHealRange, isInRangedHealRange } from '../services/RangeUtils.mjs';
 import { BodyPartCalculator } from '../constants.mjs';
 
 // Cleric job - ranged combat with healing abilities

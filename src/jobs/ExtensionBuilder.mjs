@@ -2,7 +2,7 @@ import { getRange, getTerrainAt } from 'game/utils';
 import { StructureExtension } from 'game/prototypes';
 import { TERRAIN_WALL, ERR_NOT_IN_RANGE } from 'game/constants';
 import { createConstructionSite } from 'game';
-import { isAdjacent } from '../utils/RangeUtils.mjs';
+import { isAdjacent } from '../services/RangeUtils.mjs';
 import { MapTopology } from '../constants.mjs';
 import { TerrainAnalyzer } from '../combat/TerrainAnalyzer.mjs';
 

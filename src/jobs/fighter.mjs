@@ -2,7 +2,7 @@ import { getObjectById, getRange } from 'game/utils';
 import { ATTACK, MOVE, ERR_NOT_IN_RANGE} from 'game/constants';
 import { Creep, StructureSpawn, StructureRampart } from 'game/prototypes';
 import { ActiveCreep } from './ActiveCreep.mjs';
-import { CombatUtils } from '../utils/CombatUtils.mjs';
+import { CombatUtils } from '../services/CombatUtils.mjs';
 import { BodyPartCalculator, MapTopology } from '../constants.mjs';
 
 // Fighter job - melee combat
