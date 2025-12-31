@@ -2,6 +2,7 @@ import { getObjectById, getObjectsByPrototype } from 'game/utils';
 import { ATTACK, MOVE, ERR_NOT_IN_RANGE} from 'game/constants';
 import { Creep, StructureSpawn, StructureRampart } from 'game/prototypes';
 import { ActiveCreep } from './ActiveCreep.mjs';
+import { CombatUtils } from '../utils/CombatUtils.mjs';
 
 // Fighter job - melee combat
 export class FighterJob extends ActiveCreep {
@@ -24,19 +25,13 @@ export class FighterJob extends ActiveCreep {
         }
 
         // Find all enemy creeps
-        const allHostileCreeps = getObjectsByPrototype(Creep).filter(i => !i.my);
+        const allHostileCreeps = this.gameState.getEnemyCreeps();
         
         // Get all ramparts
-        const ramparts = getObjectsByPrototype(StructureRampart);
+        const ramparts = this.gameState.getRamparts();
         
         // Filter out enemies that are standing on ramparts
-        const hostileCreeps = allHostileCreeps.filter(enemy => {
-            // Check if any rampart is at the same position as this enemy
-            const onRampart = ramparts.some(rampart => 
-                rampart.x === enemy.x && rampart.y === enemy.y
-            );
-            return !onRampart;
-        });
+        const hostileCreeps = CombatUtils.filterMeleeTargetableEnemies(allHostileCreeps, ramparts);
         
         // If there are no targetable enemies (all on ramparts or none exist), idle
         if (hostileCreeps.length === 0) {
@@ -61,7 +56,7 @@ export class FighterJob extends ActiveCreep {
     }
 
     idle(creep) {
-        const enemySpawn = getObjectsByPrototype(StructureSpawn).find(i => !i.my);
+        const enemySpawn = this.gameState.getEnemySpawn();
         if (!enemySpawn) {
             return;
         }
@@ -71,7 +66,7 @@ export class FighterJob extends ActiveCreep {
         
         if (attackResult === ERR_NOT_IN_RANGE) {
             // Can't reach spawn, check if ramparts are blocking
-            const ramparts = getObjectsByPrototype(StructureRampart);
+            const ramparts = this.gameState.getRamparts();
             
             if (ramparts.length > 0) {
                 // Find ramparts that are on the edge (don't have ramparts in all 8 adjacent positions)

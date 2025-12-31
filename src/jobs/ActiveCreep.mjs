@@ -1,6 +1,6 @@
 // Base class for active creeps that combines CreepInfo data with Job behavior
 export class ActiveCreep {
-    constructor(id, jobName, controller, winObjective) {
+    constructor(id, jobName, controller, winObjective, gameState) {
         if (new.target === ActiveCreep) {
             throw new TypeError("Cannot construct ActiveCreep instances directly");
         }
@@ -8,6 +8,7 @@ export class ActiveCreep {
         this.jobName = jobName;
         this.controller = controller;
         this.winObjective = winObjective;
+        this.gameState = gameState;
         this.memory = {}; // Dictionary to store creep-specific state/memory
     }
 

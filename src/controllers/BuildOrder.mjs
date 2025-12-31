@@ -7,13 +7,14 @@ import { BuildStrategy } from './BuildStrategy.mjs';
  * build strategy decisions, and spawn queue management.
  */
 export class BuildOrder {
-    constructor(screepController, winObjective) {
+    constructor(screepController, winObjective, gameState) {
         this.screepController = screepController;
         this.winObjective = winObjective;
+        this.gameState = gameState;
         
         // Initialize component managers
-        this.energyManager = new EnergyManager();
-        this.buildQueue = new BuildQueue(screepController);
+        this.energyManager = new EnergyManager(gameState);
+        this.buildQueue = new BuildQueue(screepController, gameState);
         this.buildStrategy = new BuildStrategy();
     }
 

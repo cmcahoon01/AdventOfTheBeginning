@@ -2,14 +2,16 @@ import { getObjectById, getObjectsByPrototype, getRange } from 'game/utils';
 import { Creep, StructureSpawn, StructureRampart, Structure } from 'game/prototypes';
 import { ActiveCreep } from './ActiveCreep.mjs';
 import { KitingBehavior } from '../combat/KitingBehavior.mjs';
+import { isInRangedAttackRange, RANGED_ATTACK_RANGE } from '../utils/RangeUtils.mjs';
+import { CombatUtils } from '../utils/CombatUtils.mjs';
 
 // Kiting behavior constants
 const DESIRED_RANGE = 3;
 
 // Base class for ranged combat units (archer and cleric)
 export class RangedJob extends ActiveCreep {
-    constructor(id, jobName, controller, winObjective) {
-        super(id, jobName, controller, winObjective);
+    constructor(id, jobName, controller, winObjective, gameState) {
+        super(id, jobName, controller, winObjective, gameState);
         if (new.target === RangedJob) {
             throw new TypeError("Cannot construct RangedJob instances directly");
         }
@@ -44,12 +46,12 @@ export class RangedJob extends ActiveCreep {
             }
         }
         
-        const enemySpawn = getObjectsByPrototype(StructureSpawn).find(i => !i.my);
+        const enemySpawn = this.gameState.getEnemySpawn();
         if (enemySpawn) {
             const range = getRange(creep, enemySpawn);
             
             // Attack the enemy spawn if in range
-            if (range <= 3) {
+            if (isInRangedAttackRange(creep, enemySpawn)) {
                 creep.rangedAttack(enemySpawn);
             } else {
                 // Move closer if not in range
@@ -75,18 +77,18 @@ export class RangedJob extends ActiveCreep {
         }
 
         // Cache expensive operations once per tick
-        const allCreeps = getObjectsByPrototype(Creep);
+        const allCreeps = this.gameState.getAllCreeps();
         const allStructures = getObjectsByPrototype(Structure);
         
         // Find all enemy creeps
-        const allHostileCreeps = allCreeps.filter(i => !i.my);
-        const myCreeps = allCreeps.filter(i => i.my);
+        const allHostileCreeps = this.gameState.getEnemyCreeps();
+        const myCreeps = this.gameState.getMyCreeps();
         
         // Find damaged friendly creeps (including self)
         const damagedCreeps = myCreeps.filter(c => c.hits < c.hitsMax);
         
         // Determine if there are enemies in range
-        const enemiesInRange = allHostileCreeps.filter(e => getRange(creep, e) <= 3);
+        const enemiesInRange = allHostileCreeps.filter(e => isInRangedAttackRange(creep, e));
         
         // === HEALING LOGIC (if applicable) ===
         this.performHealing(creep, damagedCreeps, allCreeps);
@@ -94,21 +96,13 @@ export class RangedJob extends ActiveCreep {
         // === ATTACK LOGIC ===
         if (allHostileCreeps.length > 0) {
             // Get all ramparts for targeting logic
-            const ramparts = getObjectsByPrototype(StructureRampart);
-            const rampartPositions = new Set(ramparts.map(r => `${r.x},${r.y}`));
+            const ramparts = this.gameState.getRamparts();
             
             // Separate enemies into those on ramparts and those not on ramparts
-            const enemiesNotOnRamparts = [];
-            const enemiesOnRamparts = [];
-            
-            allHostileCreeps.forEach(enemy => {
-                const onRampart = rampartPositions.has(`${enemy.x},${enemy.y}`);
-                if (onRampart) {
-                    enemiesOnRamparts.push(enemy);
-                } else {
-                    enemiesNotOnRamparts.push(enemy);
-                }
-            });
+            const { enemiesNotOnRamparts, enemiesOnRamparts } = CombatUtils.filterEnemiesByRampartStatus(
+                allHostileCreeps, 
+                ramparts
+            );
             
             let closestEnemy = null;
             

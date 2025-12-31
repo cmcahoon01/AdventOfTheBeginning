@@ -19,7 +19,7 @@ export class HaulerJob extends ActiveCreep {
 
     // Helper function to deliver resources to spawn
     deliverToSpawn(creep) {
-        const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
+        const spawn = this.gameState.getMySpawn();
         if (spawn) {
             const transferResult = creep.transfer(spawn, RESOURCE_ENERGY);
             if (transferResult === ERR_NOT_IN_RANGE) {
@@ -84,7 +84,7 @@ export class HaulerJob extends ActiveCreep {
                 // Determine the target (either winObjective or spawn)
                 let target = this.winObjective;
                 if (!target) {
-                    target = getObjectsByPrototype(StructureSpawn).find(s => s.my);
+                    target = this.gameState.getMySpawn();
                 }
                 
                 if (target) {
