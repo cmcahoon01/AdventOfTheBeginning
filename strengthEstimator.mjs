@@ -43,9 +43,9 @@ const RANGED_HEAL_MULTIPLIER = 2.0;
 // Two pure melee units beat one melee+heal unit, indicating healing provides <50% bonus
 const MELEE_HEAL_MULTIPLIER = 0.5;
 
-// SUPPORT_HEAL_MULTIPLIER = 0.25: Pure support units have minimal combat value
+// SUPPORT_HEAL_MULTIPLIER = 1: Pure support units have minimal combat value
 // They can't deal damage and can be easily eliminated
-const SUPPORT_HEAL_MULTIPLIER = 0.25;
+const SUPPORT_HEAL_MULTIPLIER = 1;
 
 /**
  * Count body parts of a specific type in a creep

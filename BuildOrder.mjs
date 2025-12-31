@@ -123,7 +123,7 @@ export class BuildOrder {
         } else {
             // Military path: Build archers and clerics at 3:1 ratio
             // Count military units (exclude initial cleric)
-            const militaryClerics = Math.max(0, creepCounts.cleric - 1);
+            const militaryClerics = Math.max(0, creepCounts.cleric);
             const militaryArchers = creepCounts.archer;
             
             // Build archers if we need more to maintain the ratio
