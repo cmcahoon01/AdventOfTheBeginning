@@ -190,7 +190,7 @@ export class RangedJob extends ActiveCreep {
         // Default: no healing
     }
 
-    act(controller, winObjective) {
+    act() {
         const creep = getObjectById(this.id);
         if (!creep) {
             return;

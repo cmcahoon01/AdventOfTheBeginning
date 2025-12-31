@@ -17,7 +17,7 @@ export class FighterJob extends ActiveCreep {
         return 'fighter';
     }
 
-    act(controller, winObjective) {
+    act() {
         const creep = getObjectById(this.id);
         if (!creep) {
             return;

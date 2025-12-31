@@ -44,7 +44,7 @@ export class HaulerJob extends ActiveCreep {
         }
     }
 
-    act(controller, winObjective) {
+    act() {
         const creep = getObjectById(this.id);
         if (!creep) {
             return;
@@ -92,11 +92,11 @@ export class HaulerJob extends ActiveCreep {
             }
 
             // Check if there are any miner creeps by accessing the controller
-            const hasMinerCreeps = controller.creeps.some(c => c.jobName === 'miner');
+            const hasMinerCreeps = this.controller.creeps.some(c => c.jobName === 'miner');
 
             if (hasMinerCreeps) {
                 // Determine the target (either winObjective or spawn)
-                let target = winObjective;
+                let target = this.winObjective;
                 if (!target) {
                     target = getObjectsByPrototype(StructureSpawn).find(s => s.my);
                 }
@@ -133,10 +133,10 @@ export class HaulerJob extends ActiveCreep {
                     
                     // Now move towards the target
                     // If target is winObjective, also try to build it
-                    if (winObjective && target === winObjective) {
-                        const buildResult = creep.build(winObjective);
+                    if (this.winObjective && target === this.winObjective) {
+                        const buildResult = creep.build(this.winObjective);
                         if (buildResult === ERR_NOT_IN_RANGE) {
-                            creep.moveTo(winObjective);
+                            creep.moveTo(this.winObjective);
                         }
                     } else {
                         // Moving to spawn

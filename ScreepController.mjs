@@ -8,13 +8,13 @@ export class ScreepController {
     }
 
     // Add a new creep to the controller
-    addCreep(id, jobName) {
+    addCreep(id, jobName, winObjective) {
         if (!Jobs[jobName]) {
             console.log(`Warning: Unknown job type '${jobName}'`);
             return;
         }
         const JobClass = Jobs[jobName];
-        const activeCreep = new JobClass(id, jobName);
+        const activeCreep = new JobClass(id, jobName, this, winObjective);
         this.creeps.push(activeCreep);
         console.log(`Added creep ${id} with job ${jobName}`);
     }
@@ -34,7 +34,7 @@ export class ScreepController {
             // Creep is alive, call its action function
             // Skip if creep is still spawning
             if (!creep.spawning) {
-                activeCreep.act(this, winObjective);
+                activeCreep.act();
             }
             
             return true;

@@ -164,7 +164,7 @@ export class MinerJob extends ActiveCreep {
         return positions;
     }
 
-    act(controller, winObjective) {
+    act() {
         const creep = getObjectById(this.id);
         if (!creep) {
             return;
@@ -173,7 +173,7 @@ export class MinerJob extends ActiveCreep {
         // Initialize memory if not set
         if (!this.memory.initialized) {
             // Count how many miners exist before this one
-            const minerCount = controller.creeps.filter(c => 
+            const minerCount = this.controller.creeps.filter(c => 
                 c.jobName === 'miner' && c.id !== this.id
             ).length;
             
