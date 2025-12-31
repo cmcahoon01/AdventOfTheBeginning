@@ -2,8 +2,8 @@ import { getObjectsByPrototype } from 'game/utils';
 import { ConstructionSite, Creep, Source, StructureSpawn } from 'game/prototypes';
 import { CARRY, MOVE, WORK, ERR_NOT_IN_RANGE } from 'game/constants';
 import { RESOURCE_ENERGY } from 'game';
-import { ScreepController } from './ScreepController.mjs';
-import { BuildOrder } from './BuildOrder.mjs';
+import { ScreepController } from './controllers/ScreepController.mjs';
+import { BuildOrder } from './controllers/BuildOrder.mjs';
 
 const spawn = getObjectsByPrototype(StructureSpawn).find(i => i.my);
 const winObjective = getObjectsByPrototype(ConstructionSite).find(i => i.my);

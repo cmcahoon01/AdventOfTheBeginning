@@ -1,5 +1,5 @@
 import { getObjectById } from 'game/utils';
-import { Jobs } from './creep_jobs/JobRegistry.mjs';
+import { Jobs } from '../jobs/JobRegistry.mjs';
 
 // Controller class to manage all creeps
 export class ScreepController {
