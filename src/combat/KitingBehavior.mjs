@@ -27,6 +27,9 @@ export class KitingBehavior {
             { x: -1, y: -1 }   // TOP_LEFT
         ];
         
+        // Build position lookup map once for O(1) lookups instead of O(n) per check
+        const creepPositionMap = TerrainAnalyzer.buildCreepPositionMap(allCreeps);
+        
         const validPositions = [];
         
         for (const offset of adjacentOffsets) {
@@ -42,8 +45,8 @@ export class KitingBehavior {
                 continue;
             }
             
-            // Check if position is blocked by a creep
-            if (TerrainAnalyzer.hasCreep(pos, allCreeps)) {
+            // Check if position is blocked by a creep (O(1) with map)
+            if (TerrainAnalyzer.hasCreepInMap(pos, creepPositionMap)) {
                 continue;
             }
             

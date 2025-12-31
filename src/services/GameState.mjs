@@ -1,5 +1,5 @@
 import { getObjectsByPrototype } from 'game/utils';
-import { Creep, StructureSpawn, StructureRampart } from 'game/prototypes';
+import { Creep, StructureSpawn, StructureRampart, StructureExtension, Source, ConstructionSite } from 'game/prototypes';
 
 /**
  * GameState service that caches expensive game object queries per tick.
@@ -19,6 +19,9 @@ export class GameState {
         this.enemyCreeps = [];
         this.allCreeps = [];
         this.ramparts = [];
+        this.myExtensions = [];
+        this.sources = [];
+        this.myConstructionSites = [];
     }
     
     /**
@@ -37,6 +40,17 @@ export class GameState {
         
         // Cache ramparts
         this.ramparts = getObjectsByPrototype(StructureRampart);
+        
+        // Cache extensions
+        const allExtensions = getObjectsByPrototype(StructureExtension);
+        this.myExtensions = allExtensions.filter(e => e.my);
+        
+        // Cache sources
+        this.sources = getObjectsByPrototype(Source);
+        
+        // Cache construction sites
+        const allConstructionSites = getObjectsByPrototype(ConstructionSite);
+        this.myConstructionSites = allConstructionSites.filter(c => c.my);
     }
     
     /**
@@ -85,5 +99,29 @@ export class GameState {
      */
     getRamparts() {
         return this.ramparts;
+    }
+    
+    /**
+     * Get all friendly extensions.
+     * @returns {StructureExtension[]}
+     */
+    getMyExtensions() {
+        return this.myExtensions;
+    }
+    
+    /**
+     * Get all sources.
+     * @returns {Source[]}
+     */
+    getSources() {
+        return this.sources;
+    }
+    
+    /**
+     * Get all friendly construction sites.
+     * @returns {ConstructionSite[]}
+     */
+    getMyConstructionSites() {
+        return this.myConstructionSites;
     }
 }

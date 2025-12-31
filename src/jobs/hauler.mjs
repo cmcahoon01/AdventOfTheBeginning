@@ -1,6 +1,5 @@
-import { getObjectById, getObjectsByPrototype } from 'game/utils';
+import { getObjectById } from 'game/utils';
 import { WORK, CARRY, MOVE, ERR_NOT_IN_RANGE, RESOURCE_ENERGY } from 'game/constants';
-import { Source, StructureSpawn, StructureExtension } from 'game/prototypes';
 import { ActiveCreep } from './ActiveCreep.mjs';
 
 // Hauler job - resource gathering and construction
@@ -53,7 +52,7 @@ export class HaulerJob extends ActiveCreep {
 
             // Find the closest source, excluding corner sources (y < 30 or y > 70)
             // This forces haulers to use the central sources near the middle of the map
-            const allSources = getObjectsByPrototype(Source);
+            const allSources = this.gameState.getSources();
             const centralSources = allSources.filter(source => source.y >= 30 && source.y <= 70);
             // Fallback to all sources if no central sources exist
             const sourcesToUse = centralSources.length > 0 ? centralSources : allSources;
@@ -76,9 +75,8 @@ export class HaulerJob extends ActiveCreep {
             }
 
 
-
-            const extensions = getObjectsByPrototype(StructureExtension);
-            const hasBuiltExtensions = extensions.some(ext => ext.my);
+            const extensions = this.gameState.getMyExtensions();
+            const hasBuiltExtensions = extensions.length > 0;
 
             if (hasBuiltExtensions) {
                 // Determine the target (either winObjective or spawn)

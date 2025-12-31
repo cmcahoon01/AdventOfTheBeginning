@@ -1,5 +1,5 @@
-import { getObjectsByPrototype, getRange, getTerrainAt } from 'game/utils';
-import { StructureExtension, ConstructionSite } from 'game/prototypes';
+import { getRange, getTerrainAt } from 'game/utils';
+import { StructureExtension } from 'game/prototypes';
 import { TERRAIN_WALL, ERR_NOT_IN_RANGE } from 'game/constants';
 import { createConstructionSite } from 'game';
 import { isAdjacent } from '../utils/RangeUtils.mjs';
@@ -85,14 +85,15 @@ export class ExtensionBuilder {
     /**
      * Build nearby construction sites.
      * @param {Object} creep - The miner creep
+     * @param {GameState} gameState - The game state service for cached game objects
      * @returns {boolean} True if building action was taken
      */
-    static buildNearbyConstructionSites(creep) {
-        const allConstructionSites = getObjectsByPrototype(ConstructionSite).filter(c => c.my);
-        const nearbyConstructionSites = allConstructionSites.filter(site => {
-            // Only consider construction sites within 1 tile (the 8 surrounding tiles)
-            return isAdjacent(creep, site);
-        });
+    static buildNearbyConstructionSites(creep, gameState) {
+        // Combine filters: get my construction sites that are adjacent in one pass
+        const allConstructionSites = gameState.getMyConstructionSites();
+        const nearbyConstructionSites = allConstructionSites.filter(site => 
+            isAdjacent(creep, site)
+        );
         
         if (nearbyConstructionSites.length > 0) {
             // Build the nearest construction site
@@ -112,10 +113,12 @@ export class ExtensionBuilder {
     /**
      * Check if all extensions nearby are built (construction is complete).
      * @param {Object} creep - The miner creep
+     * @param {GameState} gameState - The game state service for cached game objects
      * @returns {boolean} True if all extensions are built
      */
-    static areExtensionsComplete(creep) {
-        const allExtensions = getObjectsByPrototype(StructureExtension).filter(e => e.my);
+    static areExtensionsComplete(creep, gameState) {
+        // Combine filters: get my extensions that are adjacent in one pass
+        const allExtensions = gameState.getMyExtensions();
         const nearbyExtensions = allExtensions.filter(ext => isAdjacent(creep, ext));
         
         return nearbyExtensions.length >= EXTENSIONS_PER_MINER;
@@ -126,11 +129,12 @@ export class ExtensionBuilder {
      * Transfers energy to the least full extension nearby.
      * @param {Object} creep - The miner creep
      * @param {string} resourceType - The resource type to transfer (e.g., RESOURCE_ENERGY)
+     * @param {GameState} gameState - The game state service for cached game objects
      * @returns {boolean} True if transfer action was taken
      */
-    static fillExtensions(creep, resourceType) {
-        // Find all extensions around the miner
-        const allExtensions = getObjectsByPrototype(StructureExtension).filter(e => e.my);
+    static fillExtensions(creep, resourceType, gameState) {
+        // Combine filters: get my extensions that are adjacent in one pass
+        const allExtensions = gameState.getMyExtensions();
         const nearbyExtensions = allExtensions.filter(ext => isAdjacent(creep, ext));
         
         if (nearbyExtensions.length > 0) {

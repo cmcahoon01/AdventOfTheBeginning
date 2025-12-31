@@ -1,5 +1,3 @@
-import { getObjectsByPrototype } from 'game/utils';
-import { Source, StructureSpawn } from 'game/prototypes';
 import { TerrainAnalyzer } from '../combat/TerrainAnalyzer.mjs';
 
 /**
@@ -9,20 +7,22 @@ import { TerrainAnalyzer } from '../combat/TerrainAnalyzer.mjs';
 export class SourceAssignmentStrategy {
     /**
      * Find all sources sorted by position (top to bottom).
+     * @param {GameState} gameState - The game state service for cached game objects
      * @returns {Array} Sorted array of sources
      */
-    static findSortedSources() {
-        const sources = getObjectsByPrototype(Source);
+    static findSortedSources(gameState) {
+        const sources = gameState.getSources();
         // Sort by y coordinate (top to bottom)
         return sources.sort((a, b) => a.y - b.y);
     }
 
     /**
      * Determine which team side we're on based on spawn position.
+     * @param {GameState} gameState - The game state service for cached game objects
      * @returns {string} 'left' or 'right'
      */
-    static getTeamSide() {
-        const spawn = getObjectsByPrototype(StructureSpawn).find(s => s.my);
+    static getTeamSide(gameState) {
+        const spawn = gameState.getMySpawn();
         if (!spawn) return 'left';
         
         // Assuming the map is 100x100, if spawn.x < 50, we're on the left
@@ -33,11 +33,12 @@ export class SourceAssignmentStrategy {
      * Assign a source to a miner based on miner count.
      * First miner gets top corner source, second gets bottom corner source.
      * @param {number} minerIndex - Index of the miner (0-based)
+     * @param {GameState} gameState - The game state service for cached game objects
      * @returns {Object|null} Assigned source or null if not available
      */
-    static assignSourceToMiner(minerIndex) {
-        const sources = this.findSortedSources();
-        const teamSide = this.getTeamSide();
+    static assignSourceToMiner(minerIndex, gameState) {
+        const sources = this.findSortedSources(gameState);
+        const teamSide = this.getTeamSide(gameState);
         
         if (sources.length < 2) {
             return null; // Not enough sources
@@ -75,10 +76,11 @@ export class SourceAssignmentStrategy {
      * Find the mining position directly adjacent to the source.
      * The source is in a wall, so we look for the one non-wall position directly adjacent.
      * @param {Object} source - The source to find mining position for
+     * @param {GameState} gameState - The game state service for cached game objects
      * @returns {Object|null} Mining position or null if not found
      */
-    static findMiningPosition(source) {
-        const teamSide = this.getTeamSide();
+    static findMiningPosition(source, gameState) {
+        const teamSide = this.getTeamSide(gameState);
         
         // The mining position should be the one facing towards the center/spawn
         // For corner sources, this is typically towards the center of the map

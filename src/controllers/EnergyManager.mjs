@@ -1,5 +1,3 @@
-import { getObjectsByPrototype } from 'game/utils';
-import { StructureSpawn, StructureExtension } from 'game/prototypes';
 import { RESOURCE_ENERGY } from 'game/constants';
 
 /**
@@ -27,8 +25,8 @@ export class EnergyManager {
             totalEnergy += spawn.store[RESOURCE_ENERGY] || 0;
         }
 
-        // Get energy from all extensions
-        const extensions = getObjectsByPrototype(StructureExtension).filter(c => c.my);
+        // Get energy from all extensions (now cached in GameState)
+        const extensions = this.gameState.getMyExtensions();
         for (const extension of extensions) {
             if (extension.store) {
                 totalEnergy += extension.store[RESOURCE_ENERGY] || 0;

@@ -1,5 +1,3 @@
-import { getObjectsByPrototype } from 'game/utils';
-import { Creep } from 'game/prototypes';
 import { ATTACK, RANGED_ATTACK, HEAL } from 'game/constants';
 
 /**
@@ -118,10 +116,11 @@ export function calculateTeamStrength(creeps) {
 
 /**
  * Get all friendly creeps and calculate their total strength
+ * @param {GameState} gameState - The game state service for cached game objects
  * @returns {Object} Object containing creeps array and total strength
  */
-export function getMyTeamStrength() {
-    const myCreeps = getObjectsByPrototype(Creep).filter(creep => creep.my);
+export function getMyTeamStrength(gameState) {
+    const myCreeps = gameState.getMyCreeps();
     const strength = calculateTeamStrength(myCreeps);
     
     return {
@@ -133,10 +132,11 @@ export function getMyTeamStrength() {
 
 /**
  * Get all enemy creeps and calculate their total strength
+ * @param {GameState} gameState - The game state service for cached game objects
  * @returns {Object} Object containing creeps array and total strength
  */
-export function getEnemyTeamStrength() {
-    const enemyCreeps = getObjectsByPrototype(Creep).filter(creep => !creep.my);
+export function getEnemyTeamStrength(gameState) {
+    const enemyCreeps = gameState.getEnemyCreeps();
     const strength = calculateTeamStrength(enemyCreeps);
     
     return {
@@ -148,11 +148,12 @@ export function getEnemyTeamStrength() {
 
 /**
  * Compare the relative strength of two teams
+ * @param {GameState} gameState - The game state service for cached game objects
  * @returns {Object} Comparison object with both teams' strengths and advantage
  */
-export function compareTeamStrengths() {
-    const myTeam = getMyTeamStrength();
-    const enemyTeam = getEnemyTeamStrength();
+export function compareTeamStrengths(gameState) {
+    const myTeam = getMyTeamStrength(gameState);
+    const enemyTeam = getEnemyTeamStrength(gameState);
     
     const advantage = myTeam.strength - enemyTeam.strength;
     const ratio = enemyTeam.strength > 0 ? myTeam.strength / enemyTeam.strength : Infinity;
