@@ -1,6 +1,6 @@
 # Refactoring Plan
 
-This document outlines technical debt and areas for improvement in the AdventOfTheBeginning Screeps Arena project. This is a draft plan for potential refactoring - **these issues are not to be addressed yet**, but rather compiled for future consideration.
+This document outlines technical debt and areas for improvement in the AdventOfTheBeginning Screeps Arena project.
 
 ## Project Overview
 
@@ -52,7 +52,7 @@ src/
 **Problem:** The `typings/` directory is included but its organization isn't documented.
 
 **Impact:** Low
-**Suggestion:** Document the purpose and structure of the typings directory in the main README.
+**Suggestion:** This directory should not change, as it is taken from the official Screeps Arena typings. It should be constant between all projects using the Arena API.
 
 ---
 
@@ -458,54 +458,11 @@ This suggests a known issue that's not properly resolved.
 
 ---
 
-## 7. Testing and Testability
+## 7. Documentation Gaps
 
 ### Issues:
 
-#### 7.1 No Unit Tests
-**Problem:** No test files or testing framework found in the repository.
-
-**Impact:** High
-**Suggestion:** 
-- Add Jest or Mocha for unit testing
-- Mock game API objects for testing
-- Start with critical logic: `strengthEstimator`, build strategy
-
-#### 7.2 Tight Coupling to Game API
-**Problem:** Direct calls to `getObjectsByPrototype` throughout make testing hard:
-- Can't easily test job logic without mocking entire game state
-- No abstraction layer between game API and business logic
-
-**Impact:** High
-**Suggestion:** Create adapter/facade pattern:
-```javascript
-class GameAPI {
-  getMySpawn() { }
-  getEnemyCreeps() { }
-  // Abstract game API calls
-}
-
-class MockGameAPI extends GameAPI {
-  // For testing
-}
-```
-
-#### 7.3 No Simulation or Benchmark Tests
-**Problem:** Complex algorithms (kiting, strength estimation) have no performance or correctness tests.
-
-**Impact:** Medium
-**Suggestion:** 
-- Add scenario-based tests for combat logic
-- Create benchmarks for pathfinding algorithms
-- Test edge cases for build order decisions
-
----
-
-## 8. Documentation Gaps
-
-### Issues:
-
-#### 8.1 Missing High-Level Architecture Documentation
+#### 7.1 Missing High-Level Architecture Documentation
 **Problem:** No documentation explaining:
 - How the system components interact
 - The game loop flow
@@ -519,7 +476,7 @@ class MockGameAPI extends GameAPI {
 - Extension points
 - Design decisions
 
-#### 8.2 Incomplete Inline Documentation
+#### 7.2 Incomplete Inline Documentation
 **Problem:** Inconsistent JSDoc comments:
 - `strengthEstimator.mjs` has excellent JSDoc (lines 50-193)
 - Most other files have minimal comments
@@ -531,7 +488,7 @@ class MockGameAPI extends GameAPI {
 - Document complex algorithms (kiting, source assignment)
 - Explain non-obvious design decisions
 
-#### 8.3 No Configuration Documentation
+#### 7.3 No Configuration Documentation
 **Problem:** No guide for tuning the bot:
 - Which constants can be safely changed
 - How different values affect behavior
@@ -540,7 +497,7 @@ class MockGameAPI extends GameAPI {
 **Impact:** Low
 **Suggestion:** Create `TUNING.md` or configuration guide.
 
-#### 8.4 Missing Getting Started Guide
+#### 7.4 Missing Getting Started Guide
 **Problem:** No `README.md` explaining:
 - How to run the bot
 - Development workflow
@@ -552,11 +509,11 @@ class MockGameAPI extends GameAPI {
 
 ---
 
-## 9. Performance Considerations
+## 8. Performance Considerations
 
 ### Issues:
 
-#### 9.1 Repeated getObjectsByPrototype Calls
+#### 8.1 Repeated getObjectsByPrototype Calls
 **Problem:** Expensive game API calls made multiple times per tick:
 - Every job calls `getObjectsByPrototype(Creep)` independently
 - Ramparts fetched multiple times
@@ -565,7 +522,7 @@ class MockGameAPI extends GameAPI {
 **Impact:** Medium (game performance)
 **Suggestion:** Implement per-tick caching (see 3.1)
 
-#### 9.2 O(n²) Operations in Position Checking
+#### 8.2 O(n²) Operations in Position Checking
 **Problem:** `RangedJob.getValidAdjacentPositions()` checks each position against all creeps:
 ```javascript
 const hasCreep = allCreeps.some(c => c.x === pos.x && c.y === pos.y);
@@ -578,13 +535,13 @@ Called 8 times (for each adjacent position).
 const creepPositions = new Set(allCreeps.map(c => `${c.x},${c.y}`));
 ```
 
-#### 9.3 Redundant Path Finding
+#### 8.3 Redundant Path Finding
 **Problem:** `HaulerJob.getNextMovePosition()` calls `findPath()` but creep.moveTo() also pathfinds.
 
 **Impact:** Low
 **Suggestion:** Either use the path from moveTo() or cache path results.
 
-#### 9.4 Array Filter Chains
+#### 8.4 Array Filter Chains
 **Problem:** Multiple filter operations on same array:
 - `RangedJob.mjs` lines 234-242: filters enemies twice
 
@@ -593,11 +550,11 @@ const creepPositions = new Set(allCreeps.map(c => `${c.x},${c.y}`));
 
 ---
 
-## 10. Code Style and Consistency
+## 9. Code Style and Consistency
 
 ### Issues:
 
-#### 10.1 Inconsistent Naming Conventions
+#### 9.1 Inconsistent Naming Conventions
 **Problem:** Mix of naming styles:
 - Some constants: `MAX_ROAD_CONSTRUCTION`, `EXTENSIONS_PER_MINER`
 - Some variables: `enemySpawn`, `allHostileCreeps`
@@ -609,7 +566,7 @@ const creepPositions = new Set(allCreeps.map(c => `${c.x},${c.y}`));
 - camelCase for variables/methods
 - UPPER_SNAKE_CASE for constants
 
-#### 10.2 Inconsistent Comment Style
+#### 9.2 Inconsistent Comment Style
 **Problem:** Mix of comment styles:
 - Some files use `//` for section headers
 - Others use multi-line comments
@@ -618,7 +575,7 @@ const creepPositions = new Set(allCreeps.map(c => `${c.x},${c.y}`));
 **Impact:** Low
 **Suggestion:** Standardize on JSDoc for documentation comments and `//` for inline notes.
 
-#### 10.3 Inconsistent Error Messages
+#### 9.3 Inconsistent Error Messages
 **Problem:** Console logs have varying formats:
 - Some: `"Warning: Unknown job type '${jobName}'"`
 - Others: `"spawning creep undefined"`
@@ -631,7 +588,7 @@ Logger.warn('JOB_UNKNOWN', { jobName });
 Logger.debug('MINER_POSITIONED', { minerId: this.id });
 ```
 
-#### 10.4 Mixed Use of String Literals
+#### 9.4 Mixed Use of String Literals
 **Problem:** Job names as string literals throughout:
 - `'fighter'`, `'archer'`, `'hauler'` used directly
 - Risk of typos
@@ -650,75 +607,11 @@ const JobTypes = {
 
 ---
 
-## 11. Security and Data Validation
+## 10. Dead Code and Technical Debt
 
 ### Issues:
 
-#### 11.1 No Input Validation
-**Problem:** Methods accept parameters without validation:
-- `BuildOrder.constructor(screepController, winObjective)` doesn't validate inputs
-- `ActiveCreep.constructor()` checks for direct instantiation but not parameter validity
-
-**Impact:** Low (controlled environment)
-**Suggestion:** Add parameter validation for public APIs, especially constructors.
-
-#### 11.2 Memory Object Manipulation
-**Problem:** Direct manipulation of `this.memory` object:
-- No schema or structure enforcement
-- Risk of typos in property names
-- Memory keys like `'state'`, `'sourceId'` are string literals
-
-**Impact:** Low
-**Suggestion:** Define memory schemas or use constants for memory keys.
-
----
-
-## 12. Scalability Concerns
-
-### Issues:
-
-#### 12.1 Linear Creep Updates
-**Problem:** `ScreepController.updateCreeps()` iterates all creeps every tick:
-```javascript
-this.creeps = this.creeps.filter(activeCreep => { ... });
-```
-As creep count grows, this becomes expensive.
-
-**Impact:** Low (Screeps Arena has creep limits)
-**Suggestion:** If moving to full Screeps (not Arena), consider spatial partitioning.
-
-#### 12.2 No Job Priority System
-**Problem:** All jobs execute in array order:
-- No way to prioritize critical units (e.g., clerics should heal before attacking)
-- Job execution order depends on spawn order
-
-**Impact:** Low
-**Suggestion:** Add priority queue or execution phases:
-```javascript
-const executionPhases = [
-  'healing',    // Clerics heal first
-  'defense',    // Combat units defend
-  'offense',    // Combat units attack
-  'logistics'   // Haulers/miners work
-];
-```
-
-#### 12.3 No Resource Management
-**Problem:** No global resource allocation:
-- Haulers and miners independently decide what to do
-- No coordination if multiple haulers target same source
-- No energy reservation system
-
-**Impact:** Low (works for current scale)
-**Suggestion:** Consider resource reservation system if expanding.
-
----
-
-## 13. Dead Code and Technical Debt
-
-### Issues:
-
-#### 13.1 Commented-Out Code
+#### 10.1 Commented-Out Code
 **Problem:** Several instances of commented code:
 - `HaulerJob.mjs` line 139: Road building commented out
 - `HaulerJob.mjs` line 126: Miner check commented out
@@ -727,7 +620,7 @@ const executionPhases = [
 **Impact:** Medium
 **Suggestion:** Remove old code or document why it's preserved. Use git history if needed.
 
-#### 13.2 Unused Imports
+#### 10.2 Unused Imports
 **Problem:** Some imports may not be used:
 - Need to verify each import is actually used
 - Example: `RESOURCE_ENERGY` imported many places, might use `game/constants` barrel import instead
@@ -735,14 +628,14 @@ const executionPhases = [
 **Impact:** Low
 **Suggestion:** Run a linter to detect unused imports.
 
-#### 13.3 Unused Index File
+#### 10.3 Unused Index File
 **Problem:** `creep_jobs/index.mjs` exports all classes but is never imported anywhere.
 - Main code imports from `JobRegistry.mjs` instead
 
 **Impact:** Low
 **Suggestion:** Either use the barrel export or remove it to reduce confusion.
 
-#### 13.4 FighterJob May Be Obsolete
+#### 10.4 FighterJob May Be Obsolete
 **Problem:** `FighterJob` is defined but never appears in `INITIAL_BUILD_ORDER` or adaptive builds:
 - Only archer, cleric, hauler, miner are used in `BuildOrder.mjs`
 - FighterJob exists but may be deprecated
@@ -752,74 +645,27 @@ const executionPhases = [
 
 ---
 
-## 14. Build and Development Workflow
-
-### Issues:
-
-#### 14.1 No Build Process
-**Problem:** No build configuration:
-- No bundler (webpack, rollup, etc.)
-- No transpilation setup
-- No minification for deployment
-
-**Impact:** Low (mjs files work directly)
-**Suggestion:** Consider build process if deploying to production Screeps servers.
-
-#### 14.2 No Linting Configuration
-**Problem:** No ESLint or similar configuration:
-- No code quality checks
-- No style enforcement
-- Easy for inconsistencies to slip in
-
-**Impact:** Medium
-**Suggestion:** Add `.eslintrc` with appropriate rules for the codebase.
-
-#### 14.3 No CI/CD Pipeline
-**Problem:** No automated testing or deployment:
-- No GitHub Actions workflows
-- No pre-commit hooks
-- Manual quality control
-
-**Impact:** Low
-**Suggestion:** Add GitHub Actions for:
-- Linting on PR
-- Running tests (once added)
-- Automated deployment to Screeps
-
-#### 14.4 No Package.json Scripts
-**Problem:** No package.json with helpful scripts:
-- No `npm run test`, `npm run lint`, etc.
-- No documented development commands
-
-**Impact:** Low
-**Suggestion:** Add package.json with scripts for common tasks.
-
----
-
 ## Summary and Prioritization
 
 ### High Priority (Refactoring Would Significantly Improve Codebase):
 1. **Split BuildOrder class** (Section 2.1) - Too many responsibilities
 2. **Extract movement logic from RangedJob** (Section 2.2) - Complex and reusable
 3. **Simplify MinerJob** (Section 2.3) - Too many concerns
-4. **Add unit tests** (Section 7.1) - Critical for confidence in changes
-5. **Implement game state caching** (Section 3.1, 9.1) - Performance and code clarity
+5. **Implement game state caching** (Section 3.1, 8.1) - Performance and code clarity
 
 ### Medium Priority (Would Improve Maintainability):
 1. **Reorganize file structure** (Section 1.1) - Better navigation
 2. **Extract combat targeting logic** (Section 3.3) - DRY principle
 3. **Centralize magic numbers** (Section 4) - Easier tuning
 4. **Implement Strategy pattern for builds** (Section 5.1) - More extensible
-5. **Add architecture documentation** (Section 8.1) - Onboarding and understanding
+5. **Add architecture documentation** (Section 7.1) - Onboarding and understanding
 6. **Add error handling** (Section 6.1) - Robustness
-7. **Setup linting** (Section 14.2) - Code quality
 
 ### Low Priority (Nice to Have):
-1. **Optimize position checking** (Section 9.2) - Performance
-2. **Standardize code style** (Section 10) - Consistency
+1. **Optimize position checking** (Section 8.2) - Performance
+2. **Standardize code style** (Section 9) - Consistency
 3. **Add configuration guide** (Section 8.3) - User experience
-4. **Remove dead code** (Section 13) - Cleanliness
-5. **Add job priority system** (Section 12.2) - Advanced feature
+4. **Remove dead code** (Section 10) - Cleanliness
 
 ### Technical Debt Score
 Based on analysis:
@@ -836,16 +682,3 @@ Based on analysis:
 4. **Separation of jobs directory** - Good organizational start
 5. **Use of ES6 modules** - Modern approach
 
----
-
-## Next Steps
-
-When ready to address these issues:
-
-1. **Phase 1 - Foundation**: Add tests, linting, and documentation
-2. **Phase 2 - Structure**: Reorganize files and split large classes
-3. **Phase 3 - Refactor**: Extract duplicated code, implement patterns
-4. **Phase 4 - Optimize**: Performance improvements and caching
-5. **Phase 5 - Polish**: Code style, dead code removal, final cleanup
-
-Each phase should be done incrementally with continuous testing to ensure functionality is preserved.
