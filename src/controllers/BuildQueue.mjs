@@ -1,3 +1,6 @@
+import { LEFT, RIGHT } from 'game/constants';
+import { MapTopology } from '../constants.mjs';
+
 /**
  * Manages spawn queue and tracks pending spawns.
  * Handles the coordination between spawn requests and creep memory addition.
@@ -43,12 +46,57 @@ export class BuildQueue {
     }
 
     /**
+     * Set spawn directions based on game state and team position.
+     * Initially spawns towards win objective, then inverts after initial transfer.
+     * 
+     * Note: setDirections() controls where the spawned creep will move to/appear relative
+     * to the spawn. For example, setting [LEFT] causes the creep to appear/move to the 
+     * left of the spawn structure.
+     * 
+     * @param {Object} spawn - The spawn structure
+     * @param {Object} winObjective - The win objective construction site
+     */
+    setSpawnDirections(spawn, winObjective) {
+        if (!spawn || !winObjective) {
+            return;
+        }
+
+        const hasInitialized = this.gameState.getHasInitializedWinObjective();
+        
+        // Determine which side of the map we're on (left vs right of center)
+        const isOnLeftSide = spawn.x < MapTopology.ARENA_CENTER;
+        
+        if (!hasInitialized) {
+            // Before initial transfer: spawn creeps towards win objective on our side
+            // Win objective should be near our spawn, on the same side of the map
+            if (isOnLeftSide) {
+                spawn.setDirections([LEFT]);
+                console.log(`Setting spawn direction to LEFT (spawn at x=${spawn.x}, win obj at x=${winObjective.x})`);
+            } else {
+                spawn.setDirections([RIGHT]);
+                console.log(`Setting spawn direction to RIGHT (spawn at x=${spawn.x}, win obj at x=${winObjective.x})`);
+            }
+        } else {
+            // After initial transfer: spawn creeps towards enemy
+            // Enemy is on the opposite side of the map
+            if (isOnLeftSide) {
+                spawn.setDirections([RIGHT]);
+                console.log(`Setting spawn direction to RIGHT (towards enemy, spawn at x=${spawn.x})`);
+            } else {
+                spawn.setDirections([LEFT]);
+                console.log(`Setting spawn direction to LEFT (towards enemy, spawn at x=${spawn.x})`);
+            }
+        }
+    }
+
+    /**
      * Attempt to spawn a creep with the given configuration.
      * @param {Object} nextCreep - Creep configuration with job, body, and cost
      * @param {number} availableEnergy - Total energy available for spawning
+     * @param {Object} winObjective - The win objective to determine spawn direction
      * @returns {boolean} True if spawn was successful, false otherwise
      */
-    trySpawn(nextCreep, availableEnergy) {
+    trySpawn(nextCreep, availableEnergy, winObjective) {
         const spawn = this.gameState.getMySpawn();
         
         // Check if spawn exists and is not currently spawning
@@ -60,6 +108,9 @@ export class BuildQueue {
         if (availableEnergy < nextCreep.cost) {
             return false;
         }
+
+        // Set spawn directions based on game state
+        this.setSpawnDirections(spawn, winObjective);
 
         // Try to spawn the creep
         const result = spawn.spawnCreep(nextCreep.body);

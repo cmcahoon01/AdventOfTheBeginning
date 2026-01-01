@@ -43,6 +43,6 @@ export class BuildOrder {
         const totalEnergy = this.energyManager.getTotalEnergy();
 
         // Try to spawn using the build queue
-        return this.buildQueue.trySpawn(nextCreep, totalEnergy);
+        return this.buildQueue.trySpawn(nextCreep, totalEnergy, this.winObjective);
     }
 }
