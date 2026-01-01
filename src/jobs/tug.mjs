@@ -25,39 +25,26 @@ export class TugJob extends ActiveCreep {
 
         const tugChain = this.gameState.getTugChain();
         
-        // If tugChain is empty, wait for a creep to request help
+        // If tugChain is empty, move to our spawn
         if (tugChain.length === 0) {
-            // Idle - wait for requests
+            const mySpawn = this.gameState.getMySpawn();
+            if (mySpawn) {
+                creep.moveTo(mySpawn);
+            }
             return;
         }
 
-        // Validate the chain - remove any dead creeps
-        const validChain = tugChain.filter(id => {
-            const chainCreep = getObjectById(id);
-            return chainCreep && chainCreep.exists;
-        });
-        
-        // Update the chain if any creeps were removed
-        if (validChain.length !== tugChain.length) {
-            this.gameState.setTugChain(validChain);
-            
-            // If the chain is now empty, nothing to do
-            if (validChain.length === 0) {
-                return;
-            }
-        }
-
         // Check if this tug is already in the chain
-        const isInChain = validChain.includes(this.id);
+        const isInChain = tugChain.includes(this.id);
         
         if (!isInChain) {
             // This tug needs to join the chain
             // Move towards the last creep in the chain
-            const lastCreepId = validChain[validChain.length - 1];
+            const lastCreepId = tugChain[tugChain.length - 1];
             const lastCreep = getObjectById(lastCreepId);
             
             if (!lastCreep) {
-                // This shouldn't happen after validation, but handle it safely
+                // Last creep in chain is dead, tugChain will be cleaned up in next refresh
                 return;
             }
             

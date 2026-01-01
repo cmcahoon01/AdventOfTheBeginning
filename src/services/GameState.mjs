@@ -1,4 +1,4 @@
-import { getObjectsByPrototype } from 'game/utils';
+import { getObjectsByPrototype, getObjectById } from 'game/utils';
 import { Creep, StructureSpawn, StructureRampart, StructureExtension, Source, ConstructionSite } from 'game/prototypes';
 import { detectFortifiedMiner } from "./StructureUtils.mjs";
 
@@ -63,6 +63,14 @@ export class GameState {
 
         // Check if we have built a miner
         this.hasBuiltMiner = this.screepController.hasCreepOfRole('miner');
+        
+        // Validate and clean up tug chain - remove any dead creeps
+        if (this.tugChain.length > 0) {
+            this.tugChain = this.tugChain.filter(id => {
+                const creep = getObjectById(id);
+                return creep && creep.exists;
+            });
+        }
     }
     
     /**
