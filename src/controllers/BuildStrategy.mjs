@@ -36,7 +36,7 @@ export class BuildStrategy {
             }
         }
 
-        // Phase 1: Initial build order (cleric, hauler)
+        // Phase 1: Initial build order (cleric)
         for (let i = 0; i < BuildConfig.INITIAL_BUILD.length; i++) {
             const jobName = BuildConfig.INITIAL_BUILD[i];
             const jobClass = Jobs[jobName];
@@ -82,17 +82,35 @@ export class BuildStrategy {
         const isStrongerOrEqual = comparison.ratio >= BuildConfig.STRENGTH_THRESHOLD;
 
         if (isStrongerOrEqual) {
-            // Logistics path: Build 1 miner, then haulers
-            if (creepCounts.miner < 1) {
-                const minerClass = Jobs['miner'];
-                return {
-                    job: 'miner',
-                    body: minerClass.BODY,
-                    cost: minerClass.COST
-                };
+            // Logistics path: Build economy units based on ECONOMY_BUILD order, then haulers infinitely
+            for (let i = 0; i < BuildConfig.ECONOMY_BUILD.length; i++) {
+                const jobName = BuildConfig.ECONOMY_BUILD[i];
+                const jobClass = Jobs[jobName];
+
+                if (!jobClass) {
+                    console.log(`Warning: Unknown job type '${jobName}' in build order`);
+                    continue;
+                }
+
+                // Count how many of this job should exist up to and including this position
+                let expectedCount = 0;
+                for (let j = 0; j <= i; j++) {
+                    if (BuildConfig.ECONOMY_BUILD[j] === jobName) {
+                        expectedCount++;
+                    }
+                }
+
+                // If we don't have enough of this job type, build it
+                if (creepCounts[jobName] < expectedCount) {
+                    return {
+                        job: jobName,
+                        body: jobClass.BODY,
+                        cost: jobClass.COST
+                    };
+                }
             }
             
-            // After 2 miners, build haulers infinitely
+            // After, build haulers infinitely
             const haulerClass = Jobs['hauler'];
             return {
                 job: 'hauler',

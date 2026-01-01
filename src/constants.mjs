@@ -81,13 +81,22 @@ export const BuildConfig = {
     
     /**
      * Initial build order that always executes first.
-     * Provides basic offense (cleric) and economy (hauler) foundation.
+     * Provides basic offense (cleric) foundation.
      * 
      * Rationale:
      * - Cleric: Provides early combat presence with healing and ranged attack
-     * - Hauler: Establishes basic economy for faster subsequent spawns
      */
-    INITIAL_BUILD: ['cleric', 'hauler']
+    INITIAL_BUILD: ['cleric'],
+
+    /**
+     * Economy-focused build order
+     *
+     * Rationale:
+     * - Tug: To move part of the miner's weight
+     * - Miner: To harvest energy
+     * - Tug: To move the rest of the miner's weight
+     */
+    ECONOMY_BUILD: ['tug', 'miner', 'tug'],
 };
 
 // ============================================================================

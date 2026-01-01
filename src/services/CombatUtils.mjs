@@ -77,9 +77,17 @@ export class CombatUtils {
         if (myRamparts.length === 0) {
             return null;
         }
-        
+
+        const myCreeps = gameState.myCreeps;
+
+        const occupied = new Set(myCreeps.map(c => `${c.x},${c.y}`));
+        const freeRamparts = myRamparts.filter(r => !occupied.has(`${r.x},${r.y}`));
+        if (freeRamparts.length === 0) {
+            return null;
+        }
+
         // Find the closest friendly rampart to the creep
-        const closestRampart = creep.findClosestByRange(myRamparts);
+        const closestRampart = creep.findClosestByRange(freeRamparts);
         return closestRampart;
     }
     
