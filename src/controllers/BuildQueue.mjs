@@ -48,6 +48,11 @@ export class BuildQueue {
     /**
      * Set spawn directions based on game state and team position.
      * Initially spawns towards win objective, then inverts after initial transfer.
+     * 
+     * Note: setDirections() controls where the spawned creep will move to/appear relative
+     * to the spawn. For example, setting [LEFT] causes the creep to appear/move to the 
+     * left of the spawn structure.
+     * 
      * @param {Object} spawn - The spawn structure
      * @param {Object} winObjective - The win objective construction site
      */
@@ -62,26 +67,24 @@ export class BuildQueue {
         const isOnLeftSide = spawn.x < MapTopology.ARENA_CENTER;
         
         if (!hasInitialized) {
-            // Before initial transfer: spawn towards win objective on our side
-            // If we're on the left side, spawn LEFT (towards our side/win objective)
-            // If we're on the right side, spawn RIGHT (towards our side/win objective)
+            // Before initial transfer: spawn creeps towards win objective on our side
+            // Win objective should be near our spawn, on the same side of the map
             if (isOnLeftSide) {
                 spawn.setDirections([LEFT]);
-                console.log('Setting spawn direction to LEFT (towards win objective)');
+                console.log(`Setting spawn direction to LEFT (spawn at x=${spawn.x}, win obj at x=${winObjective.x})`);
             } else {
                 spawn.setDirections([RIGHT]);
-                console.log('Setting spawn direction to RIGHT (towards win objective)');
+                console.log(`Setting spawn direction to RIGHT (spawn at x=${spawn.x}, win obj at x=${winObjective.x})`);
             }
         } else {
-            // After initial transfer: invert spawn direction towards enemy
-            // If we're on the left side, spawn RIGHT (towards enemy on right)
-            // If we're on the right side, spawn LEFT (towards enemy on left)
+            // After initial transfer: spawn creeps towards enemy
+            // Enemy is on the opposite side of the map
             if (isOnLeftSide) {
                 spawn.setDirections([RIGHT]);
-                console.log('Setting spawn direction to RIGHT (towards enemy)');
+                console.log(`Setting spawn direction to RIGHT (towards enemy, spawn at x=${spawn.x})`);
             } else {
                 spawn.setDirections([LEFT]);
-                console.log('Setting spawn direction to LEFT (towards enemy)');
+                console.log(`Setting spawn direction to LEFT (towards enemy, spawn at x=${spawn.x})`);
             }
         }
     }
