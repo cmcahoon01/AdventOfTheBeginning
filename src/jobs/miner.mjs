@@ -6,11 +6,12 @@ import { ExtensionBuilder } from './ExtensionBuilder.mjs';
 import { MinerStateMachine } from './MinerStateMachine.mjs';
 import { BodyPartCalculator } from '../constants.mjs';
 import { CombatUtils } from '../services/CombatUtils.mjs';
+import { TugChainService } from '../services/TugChainService.mjs';
 
 // Miner job - dedicated resource extraction and extension building
 export class MinerJob extends ActiveCreep {
     static get BODY() {
-        return [WORK, WORK, WORK, WORK, CARRY, MOVE];
+        return [WORK, WORK, CARRY];
     }
 
     static get COST() {
@@ -82,11 +83,20 @@ export class MinerJob extends ActiveCreep {
             
             // Check if we've arrived
             if (MinerStateMachine.isAtTargetPosition(creep, this.memory)) {
+                // Clear the tug chain to release tug creeps
+                this.gameState.clearTugChain();
                 MinerStateMachine.transitionToMining(this.memory);
                 console.log(`Miner ${this.id} arrived at mining position`);
             } else {
-                // Move to the target position
-                creep.moveTo(targetPos);
+                // Use tug chain to move to the target position
+                // Add this miner to the tug chain if not already present
+                const tugChain = this.gameState.getTugChain();
+                if (tugChain.length === 0 || tugChain[0] !== this.id) {
+                    this.gameState.setTugChain([this.id]);
+                }
+                
+                // Move the chain towards the target position
+                TugChainService.moveChain(this.gameState.getTugChain(), targetPos);
             }
             return;
         }
