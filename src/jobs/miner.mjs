@@ -83,20 +83,29 @@ export class MinerJob extends ActiveCreep {
             
             // Check if we've arrived
             if (MinerStateMachine.isAtTargetPosition(creep, this.memory)) {
-                // Clear the tug chain to release tug creeps
-                this.gameState.clearTugChain();
+                // Clear the tug chain only if this miner is the one using it
+                const tugChain = this.gameState.getTugChain();
+                if (tugChain.length > 0 && tugChain[0] === this.id) {
+                    this.gameState.clearTugChain();
+                }
                 MinerStateMachine.transitionToMining(this.memory);
                 console.log(`Miner ${this.id} arrived at mining position`);
             } else {
                 // Use tug chain to move to the target position
-                // Add this miner to the tug chain if not already present
                 const tugChain = this.gameState.getTugChain();
-                if (tugChain.length === 0 || tugChain[0] !== this.id) {
-                    this.gameState.setTugChain([this.id]);
-                }
                 
-                // Move the chain towards the target position
-                TugChainService.moveChain(this.gameState.getTugChain(), targetPos);
+                // Only set up the tug chain if it's empty or already assigned to this miner
+                if (tugChain.length === 0) {
+                    // Chain is free, claim it for this miner
+                    this.gameState.setTugChain([this.id]);
+                    TugChainService.moveChain(this.gameState.getTugChain(), targetPos);
+                } else if (tugChain[0] === this.id) {
+                    // This miner is already using the chain, continue moving
+                    TugChainService.moveChain(tugChain, targetPos);
+                } else {
+                    // Another miner is using the chain, wait for it to finish
+                    // Don't move this tick
+                }
             }
             return;
         }
