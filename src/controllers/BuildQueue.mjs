@@ -1,4 +1,5 @@
 import { LEFT, RIGHT } from 'game/constants';
+import { MapTopology } from '../constants.mjs';
 
 /**
  * Manages spawn queue and tracks pending spawns.
@@ -10,8 +11,6 @@ export class BuildQueue {
         this.gameState = gameState;
         // Track the job type of the creep currently being spawned
         this.pendingSpawnJob = null;
-        // Track if spawn direction has been set
-        this.spawnDirectionSet = false;
     }
 
     /**
@@ -60,8 +59,7 @@ export class BuildQueue {
         const hasInitialized = this.gameState.getHasInitializedWinObjective();
         
         // Determine which side of the map we're on (left vs right of center)
-        const mapCenter = 50; // Screeps Arena maps are typically 100x100
-        const isOnLeftSide = spawn.x < mapCenter;
+        const isOnLeftSide = spawn.x < MapTopology.ARENA_CENTER;
         
         if (!hasInitialized) {
             // Before initial transfer: spawn towards win objective on our side

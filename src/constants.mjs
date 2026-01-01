@@ -128,7 +128,13 @@ export const MapTopology = {
      * Arena map size (width and height).
      * Standard Screeps Arena maps are 100x100.
      */
-    ARENA_SIZE: 100
+    ARENA_SIZE: 100,
+    
+    /**
+     * Center coordinate of the arena map.
+     * Used to determine which side of the map a spawn is on.
+     */
+    ARENA_CENTER: 50
 };
 
 // ============================================================================
