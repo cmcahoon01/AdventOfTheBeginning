@@ -6,11 +6,12 @@ import { ExtensionBuilder } from './ExtensionBuilder.mjs';
 import { MinerStateMachine } from './MinerStateMachine.mjs';
 import { BodyPartCalculator } from '../constants.mjs';
 import { CombatUtils } from '../services/CombatUtils.mjs';
+import { TugChainService } from '../services/TugChainService.mjs';
 
 // Miner job - dedicated resource extraction and extension building
 export class MinerJob extends ActiveCreep {
     static get BODY() {
-        return [WORK, WORK, WORK, WORK, CARRY, MOVE];
+        return [WORK, WORK, CARRY];
     }
 
     static get COST() {
@@ -82,11 +83,30 @@ export class MinerJob extends ActiveCreep {
             
             // Check if we've arrived
             if (MinerStateMachine.isAtTargetPosition(creep, this.memory)) {
+                // Clear the tug chain only if this miner is the one using it
+                const tugChain = this.gameState.getTugChain();
+                if (tugChain.length > 0 && tugChain[0] === this.id) {
+                    this.gameState.clearTugChain();
+                }
                 MinerStateMachine.transitionToMining(this.memory);
                 console.log(`Miner ${this.id} arrived at mining position`);
             } else {
-                // Move to the target position
-                creep.moveTo(targetPos);
+                // Use tug chain to move to the target position
+                const tugChain = this.gameState.getTugChain();
+                
+                // Only set up the tug chain if it's empty or already assigned to this miner
+                if (tugChain.length === 0) {
+                    // Chain is free, claim it for this miner
+                    const newChain = [this.id];
+                    this.gameState.setTugChain(newChain);
+                    TugChainService.moveChain(newChain, targetPos);
+                } else if (tugChain[0] === this.id) {
+                    // This miner is already using the chain, continue moving
+                    TugChainService.moveChain(tugChain, targetPos);
+                } else {
+                    // Another miner is using the chain, wait for it to finish
+                    // Don't move this tick
+                }
             }
             return;
         }
