@@ -10,6 +10,8 @@
 // Body Part Costs
 // ============================================================================
 
+import {LEFT, RIGHT, TOP, BOTTOM, BOTTOM_LEFT, BOTTOM_RIGHT, TOP_LEFT, TOP_RIGHT} from "game/constants";
+
 /**
  * Cost of each body part type in energy.
  * These values are defined by the Screeps Arena API.
@@ -104,7 +106,9 @@ export const BuildConfig = {
         {job: 'miner', tier: 1},
         'tug',
         'tug',
-        {job: 'miner', tier: 2}
+        {job: 'miner', tier: 2},
+        'tug',
+        'tug',
     ],
 };
 
@@ -147,7 +151,14 @@ export const MapTopology = {
      * Center coordinate of the arena map.
      * Used to determine which side of the map a spawn is on.
      */
-    ARENA_CENTER: 50
+    ARENA_CENTER: 50,
+
+    /**
+     * Preferred spawn directions when spawning creeps.
+     *
+     */
+    LEFT_FIRST_SPAWNING: [LEFT, TOP_LEFT, TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT],
+    RIGHT_FIRST_SPAWNING: [RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT, TOP, TOP_RIGHT],
 };
 
 // ============================================================================

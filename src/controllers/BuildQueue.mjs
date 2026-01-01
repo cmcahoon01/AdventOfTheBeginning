@@ -70,21 +70,17 @@ export class BuildQueue {
             // Before initial transfer: spawn creeps towards win objective on our side
             // Win objective should be near our spawn, on the same side of the map
             if (isOnLeftSide) {
-                spawn.setDirections([LEFT]);
-                console.log(`Setting spawn direction to LEFT (spawn at x=${spawn.x}, win obj at x=${winObjective.x})`);
+                spawn.setDirections(MapTopology.LEFT_FIRST_SPAWNING);
             } else {
-                spawn.setDirections([RIGHT]);
-                console.log(`Setting spawn direction to RIGHT (spawn at x=${spawn.x}, win obj at x=${winObjective.x})`);
+                spawn.setDirections(MapTopology.RIGHT_FIRST_SPAWNING);
             }
         } else {
             // After initial transfer: spawn creeps towards enemy
             // Enemy is on the opposite side of the map
             if (isOnLeftSide) {
-                spawn.setDirections([RIGHT]);
-                console.log(`Setting spawn direction to RIGHT (towards enemy, spawn at x=${spawn.x})`);
+                spawn.setDirections(MapTopology.RIGHT_FIRST_SPAWNING);
             } else {
-                spawn.setDirections([LEFT]);
-                console.log(`Setting spawn direction to LEFT (towards enemy, spawn at x=${spawn.x})`);
+                spawn.setDirections(MapTopology.LEFT_FIRST_SPAWNING);
             }
         }
     }
