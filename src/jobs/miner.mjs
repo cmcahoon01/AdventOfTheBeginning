@@ -97,8 +97,9 @@ export class MinerJob extends ActiveCreep {
                 // Only set up the tug chain if it's empty or already assigned to this miner
                 if (tugChain.length === 0) {
                     // Chain is free, claim it for this miner
-                    this.gameState.setTugChain([this.id]);
-                    TugChainService.moveChain(this.gameState.getTugChain(), targetPos);
+                    const newChain = [this.id];
+                    this.gameState.setTugChain(newChain);
+                    TugChainService.moveChain(newChain, targetPos);
                 } else if (tugChain[0] === this.id) {
                     // This miner is already using the chain, continue moving
                     TugChainService.moveChain(tugChain, targetPos);
