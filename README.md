@@ -73,6 +73,7 @@ The project uses ES6 modules with JSConfig for IDE support. Type definitions are
 
 - **[Screeps API Reference](docs/screeps-api-reference.md)**: Complete API documentation
 - **[Strength Estimator](docs/STRENGTH_ESTIMATOR.md)**: Details on combat strength calculations
+- **[Tiered Jobs System](docs/TIERED_JOBS.md)**: Guide to using and implementing tiered job support
 - **[Refactoring Plan](REFACTORING_PLAN.md)**: Technical debt and improvement roadmap
 
 ## Features
@@ -84,6 +85,18 @@ The project uses ES6 modules with JSConfig for IDE support. Type definitions are
 - **Cleric**: Ranged healer that supports allies and attacks enemies
 - **Hauler**: Collects energy from miners and delivers to spawn/extensions
 - **Miner**: Harvests energy from sources and builds extensions
+- **Tug**: Helps move creeps without MOVE parts (used to transport miners)
+
+#### Tiered Jobs
+
+The bot supports tiered creeps, allowing the same job to have different body configurations:
+
+- **Tier System**: Each job can define multiple tiers with different body compositions
+- **Example**: Tier 1 miner has `[WORK, WORK, CARRY]`, Tier 2 miner has `[WORK, WORK, WORK, WORK, CARRY]`
+- **Behavior**: Identical behavior across tiers, but with different capabilities based on body parts
+- **Configuration**: Specify tiers in build orders using `{job: 'miner', tier: 2}` format
+
+See `src/constants.mjs` `BuildConfig.ECONOMY_BUILD` for tier configuration examples.
 
 ### Key Systems
 
