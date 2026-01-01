@@ -23,10 +23,32 @@ export class MinerJob extends ActiveCreep {
         return 'miner';
     }
 
-    totalCapacity = 50 * MinerJob.BODY.filter(part => part === CARRY).length;
-    workParts = MinerJob.BODY.filter(part => part === WORK).length;
-    miningProduction = 2 * this.workParts;
-    buildingProduction = 5 * this.workParts;
+    /**
+     * Get body configuration for a specific tier.
+     * @param {number} tier - The tier level (1 or 2)
+     * @returns {string[]} Array of body part constants
+     */
+    static getTierBody(tier) {
+        switch(tier) {
+            case 1:
+                return this.BODY; // Tier 1: Basic miner (reuse static BODY)
+            case 2:
+                return [WORK, WORK, WORK, WORK, CARRY]; // Tier 2: Advanced miner with more work parts
+            default:
+                throw new Error(`Tier ${tier} not defined for MinerJob`);
+        }
+    }
+
+    constructor(id, jobName, tier, controller, winObjective, gameState) {
+        super(id, jobName, tier, controller, winObjective, gameState);
+        
+        // Calculate properties based on this creep's tier
+        const body = this.getBody();
+        this.totalCapacity = 50 * body.filter(part => part === CARRY).length;
+        this.workParts = body.filter(part => part === WORK).length;
+        this.miningProduction = 2 * this.workParts;
+        this.buildingProduction = 5 * this.workParts;
+    }
 
     act() {
         const creep = getObjectById(this.id);

@@ -1,5 +1,6 @@
 import { getObjectById } from 'game/utils';
 import { Jobs } from '../jobs/JobRegistry.mjs';
+import { DEFAULT_TIER } from '../constants.mjs';
 
 // Controller class to manage all creeps
 export class ScreepController {
@@ -8,13 +9,13 @@ export class ScreepController {
     }
 
     // Add a new creep to the controller
-    addCreep(id, jobName, winObjective, gameState) {
+    addCreep(id, jobName, tier, winObjective, gameState) {
         if (!Jobs[jobName]) {
             console.log(`Warning: Unknown job type '${jobName}'`);
             return;
         }
         const JobClass = Jobs[jobName];
-        const activeCreep = new JobClass(id, jobName, this, winObjective, gameState);
+        const activeCreep = new JobClass(id, jobName, tier || DEFAULT_TIER, this, winObjective, gameState);
         this.creeps.push(activeCreep);
     }
 

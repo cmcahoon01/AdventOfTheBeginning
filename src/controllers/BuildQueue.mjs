@@ -1,5 +1,5 @@
 import { LEFT, RIGHT } from 'game/constants';
-import { MapTopology } from '../constants.mjs';
+import { MapTopology, DEFAULT_TIER } from '../constants.mjs';
 
 /**
  * Manages spawn queue and tracks pending spawns.
@@ -9,8 +9,8 @@ export class BuildQueue {
     constructor(screepController, gameState) {
         this.screepController = screepController;
         this.gameState = gameState;
-        // Track the job type of the creep currently being spawned
-        this.pendingSpawnJob = null;
+        // Track the job type and tier of the creep currently being spawned
+        this.pendingSpawn = null; // Will be {job: string, tier: number}
     }
 
     /**
@@ -22,7 +22,7 @@ export class BuildQueue {
         const spawn = this.gameState.getMySpawn();
         
         // If spawn is spawning a creep and we have a pending job
-        if (spawn && spawn.spawning && this.pendingSpawnJob) {
+        if (spawn && spawn.spawning && this.pendingSpawn) {
             const creepId = spawn.spawning.creep.id;
 
             if (creepId === undefined) {
@@ -34,14 +34,14 @@ export class BuildQueue {
             const alreadyAdded = this.screepController.creeps.some(c => c.id === creepId);
             
             if (!alreadyAdded) {
-                // Add the creep to memory with its job
-                this.screepController.addCreep(creepId, this.pendingSpawnJob, winObjective, this.gameState);
+                // Add the creep to memory with its job and tier
+                this.screepController.addCreep(creepId, this.pendingSpawn.job, this.pendingSpawn.tier, winObjective, this.gameState);
             }
             // Clear pending job once we've checked and processed it
-            this.pendingSpawnJob = null;
-        } else if (this.pendingSpawnJob && (!spawn || !spawn.spawning)) {
+            this.pendingSpawn = null;
+        } else if (this.pendingSpawn && (!spawn || !spawn.spawning)) {
             // Clear pending job if spawn is no longer spawning but we still have a pending job
-            this.pendingSpawnJob = null;
+            this.pendingSpawn = null;
         }
     }
 
@@ -91,7 +91,7 @@ export class BuildQueue {
 
     /**
      * Attempt to spawn a creep with the given configuration.
-     * @param {Object} nextCreep - Creep configuration with job, body, and cost
+     * @param {Object} nextCreep - Creep configuration with job, tier, body, and cost
      * @param {number} availableEnergy - Total energy available for spawning
      * @param {Object} winObjective - The win objective to determine spawn direction
      * @returns {boolean} True if spawn was successful, false otherwise
@@ -115,9 +115,9 @@ export class BuildQueue {
         // Try to spawn the creep
         const result = spawn.spawnCreep(nextCreep.body);
         if (result && result.object && !result.error) {
-            // Mark the job as pending - we'll add it to memory once spawn.spawning is available
-            this.pendingSpawnJob = nextCreep.job;
-            console.log(`Started spawning ${nextCreep.job} (cost: ${nextCreep.cost}, available energy: ${availableEnergy})`);
+            // Mark the job and tier as pending - we'll add it to memory once spawn.spawning is available
+            this.pendingSpawn = { job: nextCreep.job, tier: nextCreep.tier || DEFAULT_TIER };
+            console.log(`Started spawning ${nextCreep.job} tier ${nextCreep.tier || DEFAULT_TIER} (cost: ${nextCreep.cost}, available energy: ${availableEnergy})`);
             return true;
         }
 
