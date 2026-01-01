@@ -53,6 +53,11 @@ export class BodyPartCalculator {
 // ============================================================================
 
 /**
+ * Default tier for creeps when not specified.
+ */
+export const DEFAULT_TIER = 1;
+
+/**
  * Configuration for build order and strategy decisions.
  */
 export const BuildConfig = {

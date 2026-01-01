@@ -1,5 +1,5 @@
 import { LEFT, RIGHT } from 'game/constants';
-import { MapTopology } from '../constants.mjs';
+import { MapTopology, DEFAULT_TIER } from '../constants.mjs';
 
 /**
  * Manages spawn queue and tracks pending spawns.
@@ -116,8 +116,8 @@ export class BuildQueue {
         const result = spawn.spawnCreep(nextCreep.body);
         if (result && result.object && !result.error) {
             // Mark the job and tier as pending - we'll add it to memory once spawn.spawning is available
-            this.pendingSpawn = { job: nextCreep.job, tier: nextCreep.tier || 1 };
-            console.log(`Started spawning ${nextCreep.job} tier ${nextCreep.tier || 1} (cost: ${nextCreep.cost}, available energy: ${availableEnergy})`);
+            this.pendingSpawn = { job: nextCreep.job, tier: nextCreep.tier || DEFAULT_TIER };
+            console.log(`Started spawning ${nextCreep.job} tier ${nextCreep.tier || DEFAULT_TIER} (cost: ${nextCreep.cost}, available energy: ${availableEnergy})`);
             return true;
         }
 

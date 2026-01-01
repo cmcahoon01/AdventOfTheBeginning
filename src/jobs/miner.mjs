@@ -31,7 +31,7 @@ export class MinerJob extends ActiveCreep {
     static getTierBody(tier) {
         switch(tier) {
             case 1:
-                return [WORK, WORK, CARRY]; // Tier 1: Basic miner
+                return this.BODY; // Tier 1: Basic miner (reuse static BODY)
             case 2:
                 return [WORK, WORK, WORK, WORK, CARRY]; // Tier 2: Advanced miner with more work parts
             default:

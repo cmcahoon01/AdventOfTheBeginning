@@ -1,6 +1,6 @@
 import { Jobs } from '../jobs/JobRegistry.mjs';
 import { compareTeamStrengths } from '../combat/strengthEstimator.mjs';
-import { BuildConfig } from '../constants.mjs';
+import { BuildConfig, DEFAULT_TIER } from '../constants.mjs';
 
 /**
  * Determines what to build based on game state.
@@ -41,7 +41,7 @@ export class BuildStrategy {
         for (let i = 0; i < BuildConfig.INITIAL_BUILD.length; i++) {
             const buildItem = BuildConfig.INITIAL_BUILD[i];
             const jobName = buildItem.job || buildItem; // Support both string and {job, tier} format
-            const tier = buildItem.tier || 1;
+            const tier = buildItem.tier || DEFAULT_TIER;
             const jobClass = Jobs[jobName];
             
             if (!jobClass) {
@@ -74,12 +74,11 @@ export class BuildStrategy {
         const fortifiedMiner = this.gameState.getFortifiedMiner();
         if (fortifiedMiner && creepCounts.fighter === 0) {
             const fighterClass = Jobs['fighter'];
-            const tier = 1;
             return {
                 job: 'fighter',
-                tier: tier,
-                body: fighterClass.getTierBody(tier),
-                cost: fighterClass.getTierCost(tier)
+                tier: DEFAULT_TIER,
+                body: fighterClass.getTierBody(DEFAULT_TIER),
+                cost: fighterClass.getTierCost(DEFAULT_TIER)
             };
         }
 
@@ -94,7 +93,7 @@ export class BuildStrategy {
             for (let i = 0; i < BuildConfig.ECONOMY_BUILD.length; i++) {
                 const buildItem = BuildConfig.ECONOMY_BUILD[i];
                 const jobName = buildItem.job || buildItem; // Support both string and {job, tier} format
-                const tier = buildItem.tier || 1;
+                const tier = buildItem.tier || DEFAULT_TIER;
                 const jobClass = Jobs[jobName];
 
                 if (!jobClass) {
@@ -125,12 +124,11 @@ export class BuildStrategy {
             
             // After, build haulers infinitely
             const haulerClass = Jobs['hauler'];
-            const tier = 1;
             return {
                 job: 'hauler',
-                tier: tier,
-                body: haulerClass.getTierBody(tier),
-                cost: haulerClass.getTierCost(tier)
+                tier: DEFAULT_TIER,
+                body: haulerClass.getTierBody(DEFAULT_TIER),
+                cost: haulerClass.getTierCost(DEFAULT_TIER)
             };
         } else {
             // Military path: Build archers and clerics at 3:1 ratio
@@ -145,22 +143,20 @@ export class BuildStrategy {
             
             if (militaryArchers < desiredArchers) {
                 const archerClass = Jobs['archer'];
-                const tier = 1;
                 return {
                     job: 'archer',
-                    tier: tier,
-                    body: archerClass.getTierBody(tier),
-                    cost: archerClass.getTierCost(tier)
+                    tier: DEFAULT_TIER,
+                    body: archerClass.getTierBody(DEFAULT_TIER),
+                    cost: archerClass.getTierCost(DEFAULT_TIER)
                 };
             } else {
                 // Build a cleric to maintain the ratio
                 const clericClass = Jobs['cleric'];
-                const tier = 1;
                 return {
                     job: 'cleric',
-                    tier: tier,
-                    body: clericClass.getTierBody(tier),
-                    cost: clericClass.getTierCost(tier)
+                    tier: DEFAULT_TIER,
+                    body: clericClass.getTierBody(DEFAULT_TIER),
+                    cost: clericClass.getTierCost(DEFAULT_TIER)
                 };
             }
         }

@@ -1,5 +1,6 @@
 import { getObjectById } from 'game/utils';
 import { Jobs } from '../jobs/JobRegistry.mjs';
+import { DEFAULT_TIER } from '../constants.mjs';
 
 // Controller class to manage all creeps
 export class ScreepController {
@@ -14,7 +15,7 @@ export class ScreepController {
             return;
         }
         const JobClass = Jobs[jobName];
-        const activeCreep = new JobClass(id, jobName, tier || 1, this, winObjective, gameState);
+        const activeCreep = new JobClass(id, jobName, tier || DEFAULT_TIER, this, winObjective, gameState);
         this.creeps.push(activeCreep);
     }
 
