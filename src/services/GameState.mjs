@@ -1,4 +1,4 @@
-import { getObjectsByPrototype } from 'game/utils';
+import { getObjectsByPrototype, getObjectById } from 'game/utils';
 import { Creep, StructureSpawn, StructureRampart, StructureExtension, Source, ConstructionSite } from 'game/prototypes';
 import { detectFortifiedMiner } from "./StructureUtils.mjs";
 
@@ -27,6 +27,7 @@ export class GameState {
         this.fortifiedMiner = null; // Cached detection of enemy miner on rampart near corner
         this.hasBuiltMiner = false;
         this.hasInitializedWinObjective = false; // Flag to track if initial win objective transfer has been performed
+        this.tugChain = []; // Array of creep IDs forming a tug chain to help move creeps without MOVE parts
     }
     
     /**
@@ -62,6 +63,14 @@ export class GameState {
 
         // Check if we have built a miner
         this.hasBuiltMiner = this.screepController.hasCreepOfRole('miner');
+        
+        // Validate and clean up tug chain - remove any dead creeps
+        if (this.tugChain.length > 0) {
+            this.tugChain = this.tugChain.filter(id => {
+                const creep = getObjectById(id);
+                return creep && creep.exists;
+            });
+        }
     }
     
     /**
@@ -174,5 +183,38 @@ export class GameState {
      */
     setHasInitializedWinObjective() {
         this.hasInitializedWinObjective = true;
+    }
+
+    /**
+     * Get the tug chain array containing IDs of creeps forming a chain to help move creeps.
+     * @return {string[]} Array of creep IDs in the tug chain
+     */
+    getTugChain() {
+        return this.tugChain;
+    }
+
+    /**
+     * Set the tug chain array.
+     * @param {string[]} tugChain - Array of creep IDs
+     */
+    setTugChain(tugChain) {
+        this.tugChain = tugChain;
+    }
+
+    /**
+     * Add a creep ID to the tug chain.
+     * @param {string} creepId - The ID of the creep to add
+     */
+    addToTugChain(creepId) {
+        if (!this.tugChain.includes(creepId)) {
+            this.tugChain.push(creepId);
+        }
+    }
+
+    /**
+     * Clear the tug chain array.
+     */
+    clearTugChain() {
+        this.tugChain = [];
     }
 }
