@@ -92,7 +92,7 @@ export const BuildConfig = {
      * Economy-focused build order
      *
      */
-    ECONOMY_BUILD: ['tug', 'miner', 'tug', 'miner'],
+    ECONOMY_BUILD: ['miner', 'tug', 'tug', 'miner'],
 };
 
 // ============================================================================
