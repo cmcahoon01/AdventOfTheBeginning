@@ -12,9 +12,10 @@ export class TugChainService {
      * 
      * @param {string[]} tugChain - Array of creep IDs, with helped creep at index 0
      * @param {Object} target - Target position or object to move towards
+     * @param {GameState} gameState - The current game state
      * @returns {boolean} True if chain movement was executed, false if chain is invalid
      */
-    static moveChain(tugChain, target) {
+    static moveChain(tugChain, target, gameState) {
         if (!tugChain || tugChain.length === 0) {
             return false;
         }
@@ -27,16 +28,28 @@ export class TugChainService {
             return false;
         }
 
+        let reachedTarget = false;
+
         // Execute the chain movement
         for (let idx = 0; idx < creeps.length; idx++) {
             if (idx === 0) {
-                // First creep (the one being helped) moves towards target
-                creeps[idx].moveTo(target);
+                if (creeps[idx].x === target.x && creeps[idx].y === target.y) {
+                    // Already at target, move up one to get the miner into position
+                    reachedTarget = true;
+                    const upOnePos = { x: target.x, y: target.y - 1 };
+                    creeps[idx].moveTo(upOnePos);
+                }else {
+                    creeps[idx].moveTo(target);
+                }
             } else {
                 // Subsequent creeps pull and follow
                 creeps[idx - 1].pull(creeps[idx]);
                 creeps[idx].moveTo(creeps[idx - 1]);
             }
+        }
+
+        if (reachedTarget) {
+            gameState.clearTugChain();
         }
 
         return true;

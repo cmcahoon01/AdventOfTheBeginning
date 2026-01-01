@@ -1,5 +1,3 @@
-import { StructureSpawn } from 'game/prototypes';
-
 /**
  * Manages spawn queue and tracks pending spawns.
  * Handles the coordination between spawn requests and creep memory addition.

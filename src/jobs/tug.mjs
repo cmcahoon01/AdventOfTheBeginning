@@ -56,7 +56,11 @@ export class TugJob extends ActiveCreep {
             
             if (distance <= 1) {
                 // We're adjacent, add ourselves to the chain
-                this.gameState.addToTugChain(this.id);
+                if (this.gameState.tugChain.length === 1) {
+                    this.gameState.tugChain = [this.id, tugChain[0]];
+                }else {
+                    this.gameState.addToTugChain(this.id)
+                }
             } else {
                 // Move towards the last creep in the chain
                 creep.moveTo(lastCreep);

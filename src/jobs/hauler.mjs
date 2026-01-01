@@ -7,7 +7,7 @@ import {CombatUtils} from '../services/CombatUtils.mjs';
 // Hauler job - resource gathering and construction
 export class HaulerJob extends ActiveCreep {
     static get BODY() {
-        return [WORK, CARRY, MOVE, MOVE];
+        return [WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE];
     }
 
     static get COST() {

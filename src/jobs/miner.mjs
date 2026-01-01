@@ -61,12 +61,12 @@ export class MinerJob extends ActiveCreep {
         
         // State: Moving to mining position
         if (MinerStateMachine.isMovingToPosition(this.memory)) {
-            // === DEFENSIVE POSTURING CHECK (only for miners not yet arrived) ===
-            const inDefensiveMode = CombatUtils.handleDefensiveRetreat(creep, this.gameState);
-            
-            if (inDefensiveMode) {
-                return; // Don't continue with normal mining movement
-            }
+            // // === DEFENSIVE POSTURING CHECK (only for miners not yet arrived) ===
+            // const inDefensiveMode = CombatUtils.handleDefensiveRetreat(creep, this.gameState);
+            //
+            // if (inDefensiveMode) {
+            //     return; // Don't continue with normal mining movement
+            // }
             
             // Calculate target position if not already set
             let targetPos = MinerStateMachine.getTargetPosition(this.memory);
@@ -82,15 +82,7 @@ export class MinerJob extends ActiveCreep {
             }
             
             // Check if we've arrived
-            if (MinerStateMachine.isAtTargetPosition(creep, this.memory)) {
-                // Clear the tug chain only if this miner is the one using it
-                const tugChain = this.gameState.getTugChain();
-                if (tugChain.length > 0 && tugChain[0] === this.id) {
-                    this.gameState.clearTugChain();
-                }
-                MinerStateMachine.transitionToMining(this.memory);
-                console.log(`Miner ${this.id} arrived at mining position`);
-            } else {
+            if (!MinerStateMachine.isAtTargetPosition(creep, this.memory)) {
                 // Use tug chain to move to the target position
                 const tugChain = this.gameState.getTugChain();
                 
@@ -99,16 +91,20 @@ export class MinerJob extends ActiveCreep {
                     // Chain is free, claim it for this miner
                     const newChain = [this.id];
                     this.gameState.setTugChain(newChain);
-                    TugChainService.moveChain(newChain, targetPos);
-                } else if (tugChain[0] === this.id) {
+                    TugChainService.moveChain(newChain, targetPos, this.gameState);
+                } else if (tugChain[1] === this.id) {
                     // This miner is already using the chain, continue moving
-                    TugChainService.moveChain(tugChain, targetPos);
+                    TugChainService.moveChain(tugChain, targetPos, this.gameState);
                 } else {
                     // Another miner is using the chain, wait for it to finish
                     // Don't move this tick
                 }
+                return;
+            } else {
+                // Arrived at target position
+                MinerStateMachine.transitionToMining(this.memory);
+                console.log(`Miner ${this.id} arrived at mining position`);
             }
-            return;
         }
         
         // State: Mining and working

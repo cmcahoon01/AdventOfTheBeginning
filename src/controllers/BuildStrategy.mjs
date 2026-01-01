@@ -27,7 +27,8 @@ export class BuildStrategy {
             archer: 0,
             hauler: 0,
             miner: 0,
-            cleric: 0
+            cleric: 0,
+            tug: 0,
         };
 
         for (const activeCreep of creeps) {

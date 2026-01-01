@@ -91,12 +91,8 @@ export const BuildConfig = {
     /**
      * Economy-focused build order
      *
-     * Rationale:
-     * - Tug: To move part of the miner's weight
-     * - Miner: To harvest energy
-     * - Tug: To move the rest of the miner's weight
      */
-    ECONOMY_BUILD: ['tug', 'miner', 'tug'],
+    ECONOMY_BUILD: ['tug', 'miner', 'tug', 'miner'],
 };
 
 // ============================================================================
