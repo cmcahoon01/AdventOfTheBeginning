@@ -90,9 +90,17 @@ export const BuildConfig = {
 
     /**
      * Economy-focused build order
-     *
+     * Each entry can be either a string (job name, defaults to tier 1) 
+     * or an object with {job, tier} to specify a tiered creep.
+     * 
+     * Example: First miner is tier 1, second miner is tier 2 (more work parts)
      */
-    ECONOMY_BUILD: ['miner', 'tug', 'tug', 'miner'],
+    ECONOMY_BUILD: [
+        {job: 'miner', tier: 1},
+        'tug',
+        'tug',
+        {job: 'miner', tier: 2}
+    ],
 };
 
 // ============================================================================

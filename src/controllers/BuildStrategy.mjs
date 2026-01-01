@@ -18,7 +18,7 @@ export class BuildStrategy {
     /**
      * Get the next creep to build based on the current game state.
      * @param {Array} creeps - Array of active creeps
-     * @returns {Object|null} Configuration object with job, body, and cost, or null if nothing to build
+     * @returns {Object|null} Configuration object with job, tier, body, and cost, or null if nothing to build
      */
     getNextCreepToBuild(creeps) {
         // Count creeps by job type
@@ -39,7 +39,9 @@ export class BuildStrategy {
 
         // Phase 1: Initial build order (cleric)
         for (let i = 0; i < BuildConfig.INITIAL_BUILD.length; i++) {
-            const jobName = BuildConfig.INITIAL_BUILD[i];
+            const buildItem = BuildConfig.INITIAL_BUILD[i];
+            const jobName = buildItem.job || buildItem; // Support both string and {job, tier} format
+            const tier = buildItem.tier || 1;
             const jobClass = Jobs[jobName];
             
             if (!jobClass) {
@@ -50,7 +52,9 @@ export class BuildStrategy {
             // Count how many of this job should exist up to and including this position
             let expectedCount = 0;
             for (let j = 0; j <= i; j++) {
-                if (BuildConfig.INITIAL_BUILD[j] === jobName) {
+                const checkItem = BuildConfig.INITIAL_BUILD[j];
+                const checkJobName = checkItem.job || checkItem;
+                if (checkJobName === jobName) {
                     expectedCount++;
                 }
             }
@@ -58,9 +62,10 @@ export class BuildStrategy {
             // If we don't have enough of this job type, build it
             if (creepCounts[jobName] < expectedCount) {
                 return { 
-                    job: jobName, 
-                    body: jobClass.BODY, 
-                    cost: jobClass.COST 
+                    job: jobName,
+                    tier: tier,
+                    body: jobClass.getTierBody(tier), 
+                    cost: jobClass.getTierCost(tier)
                 };
             }
         }
@@ -69,10 +74,12 @@ export class BuildStrategy {
         const fortifiedMiner = this.gameState.getFortifiedMiner();
         if (fortifiedMiner && creepCounts.fighter === 0) {
             const fighterClass = Jobs['fighter'];
+            const tier = 1;
             return {
                 job: 'fighter',
-                body: fighterClass.BODY,
-                cost: fighterClass.COST
+                tier: tier,
+                body: fighterClass.getTierBody(tier),
+                cost: fighterClass.getTierCost(tier)
             };
         }
 
@@ -85,7 +92,9 @@ export class BuildStrategy {
         if (isStrongerOrEqual) {
             // Logistics path: Build economy units based on ECONOMY_BUILD order, then haulers infinitely
             for (let i = 0; i < BuildConfig.ECONOMY_BUILD.length; i++) {
-                const jobName = BuildConfig.ECONOMY_BUILD[i];
+                const buildItem = BuildConfig.ECONOMY_BUILD[i];
+                const jobName = buildItem.job || buildItem; // Support both string and {job, tier} format
+                const tier = buildItem.tier || 1;
                 const jobClass = Jobs[jobName];
 
                 if (!jobClass) {
@@ -96,7 +105,9 @@ export class BuildStrategy {
                 // Count how many of this job should exist up to and including this position
                 let expectedCount = 0;
                 for (let j = 0; j <= i; j++) {
-                    if (BuildConfig.ECONOMY_BUILD[j] === jobName) {
+                    const checkItem = BuildConfig.ECONOMY_BUILD[j];
+                    const checkJobName = checkItem.job || checkItem;
+                    if (checkJobName === jobName) {
                         expectedCount++;
                     }
                 }
@@ -105,18 +116,21 @@ export class BuildStrategy {
                 if (creepCounts[jobName] < expectedCount) {
                     return {
                         job: jobName,
-                        body: jobClass.BODY,
-                        cost: jobClass.COST
+                        tier: tier,
+                        body: jobClass.getTierBody(tier),
+                        cost: jobClass.getTierCost(tier)
                     };
                 }
             }
             
             // After, build haulers infinitely
             const haulerClass = Jobs['hauler'];
+            const tier = 1;
             return {
                 job: 'hauler',
-                body: haulerClass.BODY,
-                cost: haulerClass.COST
+                tier: tier,
+                body: haulerClass.getTierBody(tier),
+                cost: haulerClass.getTierCost(tier)
             };
         } else {
             // Military path: Build archers and clerics at 3:1 ratio
@@ -131,18 +145,22 @@ export class BuildStrategy {
             
             if (militaryArchers < desiredArchers) {
                 const archerClass = Jobs['archer'];
+                const tier = 1;
                 return {
                     job: 'archer',
-                    body: archerClass.BODY,
-                    cost: archerClass.COST
+                    tier: tier,
+                    body: archerClass.getTierBody(tier),
+                    cost: archerClass.getTierCost(tier)
                 };
             } else {
                 // Build a cleric to maintain the ratio
                 const clericClass = Jobs['cleric'];
+                const tier = 1;
                 return {
                     job: 'cleric',
-                    body: clericClass.BODY,
-                    cost: clericClass.COST
+                    tier: tier,
+                    body: clericClass.getTierBody(tier),
+                    cost: clericClass.getTierCost(tier)
                 };
             }
         }
